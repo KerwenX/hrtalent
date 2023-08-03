@@ -10,15 +10,15 @@ import datetime
 import time
 from models.layer1_model import A01,A815
 
-
+# TODO 没有数据，暂时没有测试
 def cal_honor_score(now_year,session):
     now_year = int(now_year)
 
     df_honor = pd.read_sql(session.query(A815).statement, session.bind)
 
     #行内奖励
-    df_honor_past_in = df_honor[df_honor['表彰奖励级别'] == '总行级']
-    df_honor_past_in = df_honor_past_in[df_honor_past_in['表彰奖励年度'] != str(now_year)]
+    df_honor_past_in = df_honor[df_honor['a81531'] == '总行级']
+    df_honor_past_in = df_honor_past_in[df_honor_past_in['a81535'] != str(now_year)]
 
 
     def cal_in_honor_score(x, now_year):
@@ -66,13 +66,13 @@ def cal_honor_score(now_year,session):
 
 
     #计算过往荣誉得分
-    df_honor_past_in_group = df_honor_past_in[['a0188', '表彰奖励年度']].groupby(['a0188']).apply(lambda x: cal_in_honor_score(x['表彰奖励年度'].to_list(), now_year))
+    df_honor_past_in_group = df_honor_past_in[['a0188', 'a81535']].groupby(['a0188']).apply(lambda x: cal_in_honor_score(x['a81535'].to_list(), now_year))
     df_honor_past_in_group.rename('过往行内表彰得分',inplace=True)
 
     #行外奖励
-    df_honor_past_out = df_honor[df_honor['表彰奖励级别'] != '总行级']
-    df_honor_past_out = df_honor_past_out[df_honor_past_out['表彰奖励级别'].notnull()]
-    df_honor_past_out = df_honor_past_out[df_honor_past_out['表彰奖励年度'] != str(now_year)]
+    df_honor_past_out = df_honor[df_honor['a81531'] != '总行级']
+    df_honor_past_out = df_honor_past_out[df_honor_past_out['a81531'].notnull()]
+    df_honor_past_out = df_honor_past_out[df_honor_past_out['a81535'] != str(now_year)]
 
     #计算行外荣誉得分
     def cal_out_honor_score(x, now_year):
@@ -188,27 +188,27 @@ def cal_honor_score(now_year,session):
         return final_score
 
 
-    df_honor_past_out_group = df_honor_past_out[['a0188', '表彰奖励级别', '表彰奖励年度']].groupby(['a0188']).apply(lambda x: cal_out_honor_score(x[['表彰奖励级别', '表彰奖励年度']].values.tolist(), now_year))
+    df_honor_past_out_group = df_honor_past_out[['a0188', 'a81531', 'a81535']].groupby(['a0188']).apply(lambda x: cal_out_honor_score(x[['a81531', 'a81535']].values.tolist(), now_year))
     df_honor_past_out_group.rename('过往行外表彰得分',inplace=True)
 
 
     #当年内部奖励得分
-    df_honor_now_in = df_honor[df_honor['表彰奖励级别'] == '总行级']
-    df_honor_now_in = df_honor_now_in[df_honor_now_in['表彰奖励年度'] == str(now_year)]
+    df_honor_now_in = df_honor[df_honor['a81531'] == '总行级']
+    df_honor_now_in = df_honor_now_in[df_honor_now_in['a81535'] == str(now_year)]
 
 
     def cal_now_in_honor_score(x):
         return min(100, 50 * len(x))
 
 
-    df_honor_now_in_group = df_honor_now_in[['a0188', '表彰奖励年度']].groupby(['a0188']).apply(lambda x: cal_now_in_honor_score(x['表彰奖励年度'].to_list()))
+    df_honor_now_in_group = df_honor_now_in[['a0188', 'a81535']].groupby(['a0188']).apply(lambda x: cal_now_in_honor_score(x['a81535'].to_list()))
     df_honor_now_in_group.rename('当年行内表彰得分',inplace=True)
 
 
     #当年行外奖励
-    df_honor_now_out = df_honor[df_honor['表彰奖励级别'] != '总行级']
-    df_honor_now_out = df_honor_now_out[df_honor_now_out['表彰奖励级别'].notnull()]
-    df_honor_now_out = df_honor_now_out[df_honor_now_out['表彰奖励年度'] == str(now_year)]
+    df_honor_now_out = df_honor[df_honor['a81531'] != '总行级']
+    df_honor_now_out = df_honor_now_out[df_honor_now_out['a81531'].notnull()]
+    df_honor_now_out = df_honor_now_out[df_honor_now_out['a81535'] == str(now_year)]
 
 
     def cal_now_out_honor_score(x):
@@ -225,7 +225,7 @@ def cal_honor_score(now_year,session):
         return min(100, score)
 
 
-    df_honor_now_out_group = df_honor_now_out[['a0188', '表彰奖励级别']].groupby(['a0188']).apply(lambda x: cal_now_out_honor_score(x['表彰奖励级别'].to_list()))
+    df_honor_now_out_group = df_honor_now_out[['a0188', 'a81531']].groupby(['a0188']).apply(lambda x: cal_now_out_honor_score(x['a81531'].to_list()))
     df_honor_now_out_group.rename('当年行外表彰得分',inplace=True)
 
 

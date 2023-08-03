@@ -19,7 +19,7 @@ def cal_punish_score(now_year,session):
     df_weigui = pd.read_sql(session.query(A8145).statement, session.bind)
 
     #当年违规惩处积分
-    df_weigui_now = df_weigui[df_weigui['a81452'].apply(lambda x: x.split('-')[0] == str(now_year))]
+    df_weigui_now = df_weigui[df_weigui['a81452'].apply(lambda x: x.year == str(now_year))]
     df_weigui_now['a81453'] = df_weigui_now['a81453'].astype(float)
 
     df_weigui_now_group = df_weigui_now[['a0188', 'a81453']].groupby(['a0188']).sum().reset_index()
@@ -47,15 +47,16 @@ def cal_punish_score(now_year,session):
 
 
     #过去违规惩处扣分
-    df_weigui_past = df_weigui[df_weigui['a81452'].apply(lambda x: x.split('-')[0] < str(now_year))]
+    df_weigui_past = df_weigui[df_weigui['a81452'].apply(lambda x: int(x.year) < now_year)]
     df_weigui_past['a81453'] = df_weigui_past['a81453'].astype(float)
 
 
     def cal_weigui_past_score(x, now_year):
         sum_score = 0
         max_year = 0
+        x.pop(0)
         for p in x:
-            y = int(p[0].split('-')[0])
+            y = p[0].year
             if y > max_year:
                 max_year = y
             this_score = 0
@@ -99,9 +100,9 @@ def cal_punish_score(now_year,session):
     df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', 'a0141', 'a01145','a01686']]
 
     #筛选出非高管和首席的员工
-    df_base = df_base[df_base['任职形式'] == '担任']
+    # df_base = df_base[df_base['任职形式'] == '担任'] # TODO 没有任职形式字段
     df_base = df_base[df_base['dept_code'] != '高管']
-    df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)]
+    # df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)] # TODO code error
 
     df_result = pd.merge(df_base[['a0188', 'a0101']], df_weigui_now_group[['a0188', '当年违规惩处扣分']], how='left')
     df_result = pd.merge(df_result, df_weigui_past_group, on='a0188', how='left')
@@ -133,7 +134,7 @@ def cal_punish_score(now_year,session):
 
     #当年惩处
     df_chengchu_now = df_chengchu[df_chengchu['a81921'].astype(int) == now_year]
-    df_chengchu_now_g = df_chengchu_now[['a0101', '单一惩处扣分']].groupby('a0101').sum()
+    df_chengchu_now_g = df_chengchu_now[['a0101', '单一惩处扣分']].groupby('a0101').sum() # TODO 缺少数据做测试
     df_chengchu_now_g.rename(columns = {'单一惩处扣分': '当年违规惩处扣分'}, inplace=True)
 
 

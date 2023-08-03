@@ -78,7 +78,7 @@ def cal_professional_ability_score(session):
         return final_score
 
 
-    df_jiaoyu_quanrizhi['学校得分'] = df_jiaoyu_quanrizhi.apply(cal_quanrizhi_score, axis=1)
+    df_jiaoyu_quanrizhi['学校得分'] = df_jiaoyu_quanrizhi.apply(cal_quanrizhi_score, axis=1) # TODO lack of data
 
     df_jiaoyu_quanrizhi_group = df_jiaoyu_quanrizhi.groupby(['a0188']).apply(lambda x: x['学校得分'].max())
     df_jiaoyu_quanrizhi_group.rename('全日制教育得分', inplace=True)

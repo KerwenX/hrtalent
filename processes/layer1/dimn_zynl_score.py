@@ -16,7 +16,7 @@ def cal_ability_evaluation_score(session):
     df_nengli = pd.read_sql(session.query(Tability).statement, session.bind)
 
     df_nengli['综合能力得分'] = df_nengli['totalscore'].astype(float) / 8 * 100
-    df_nengli = df_nengli[['a0188', '综合能力得分']].groupby('a0188').max()
+    df_nengli = df_nengli[['a0188', '综合能力得分']].groupby('a0188').max() # TODO lack data
 
     #性格评测得分
     df_xingge = pd.read_sql(session.query(Tpersonality).statement, session.bind)

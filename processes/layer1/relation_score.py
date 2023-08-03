@@ -28,8 +28,8 @@ def cal_relation_score(session):
         return score
 
 
-    df_jiating_g = df_jiating_g[['a0101']]
-    df_jiating_g.rename(columns={'a0101': '完整条数'}, inplace=True)
+    df_jiating_g = df_jiating_g[['name']]
+    df_jiating_g.rename(columns={'name': '完整条数'}, inplace=True)
 
     df_jiating_g['家庭成员关系得分'] = df_jiating_g['完整条数'].apply(cal_jiating_score)
 
@@ -37,7 +37,7 @@ def cal_relation_score(session):
     #社会兼职
     df_jianzhi = pd.read_sql(session.query(A865).statement, session.bind)
     df_jianzhi_g = df_jianzhi.groupby('a0188').count()
-    df_jianzhi_g.rename(columns={'a0101': '完整条数'}, inplace=True)
+    df_jianzhi_g.rename(columns={'name': '完整条数'}, inplace=True) #TODO 社会兼职只有一项
     df_jianzhi_g['社会关系得分'] = df_jianzhi_g['完整条数'] * 50
 
 
@@ -45,7 +45,7 @@ def cal_relation_score(session):
     df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', 'a0141', 'a01145','a01686']]
 
     #筛选出非高管和首席的员工
-    df_base = df_base[df_base['任职形式'] == '担任']
+    df_base = df_base[df_base['任职形式'] == '担任'] # TODO 没有任职形式
     df_base = df_base[df_base['dept_code'] != '高管']
     df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)]
 

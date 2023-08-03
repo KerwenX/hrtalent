@@ -18,7 +18,7 @@ def calculate_working_status_score(now_year,session):
     #计算工作状态得分
 
     #读取KOL数据    
-    kol_names = os.listdir('seqdata/KOL')
+    kol_names = os.listdir('seqdata/KOL') # TODO KOL表
     df_kol_list = []
     for kol_name in kol_names:
         kol_file = 'seqdata/KOL/' + kol_name
@@ -35,7 +35,7 @@ def calculate_working_status_score(now_year,session):
     df_kol_now['KOL得分'] = df_kol_now['KOL积分'].astype(int) / kol_now_max_score * 100
 
     #日志数据读取
-    journal_names = os.listdir('seqdata/日志')
+    journal_names = os.listdir('seqdata/日志') # TODO 日志表
     df_journal_list = []
     for journal_name in journal_names:
         journal_file = 'seqdata/日志/' + journal_name
@@ -84,7 +84,7 @@ def calculate_working_status_score(now_year,session):
     df_kaoqin = pd.read_sql(session.query(K_month).statement, session.bind)
 
     def cal_kaoqin_score(x):
-        if x['事病假天数'] == 0:
+        if x['事病假天数'] == 0: # TODO k_month中的事病假天数字段不清楚
             return 100
         elif 0 < x['事病假天数'] and x['事病假天数'] <= 5:
             return 90
@@ -115,13 +115,13 @@ def calculate_working_status_score(now_year,session):
 
     #考核得分计算
     def cal_kaohe_score(x):
-        if x['考核情况'] == '优秀':
+        if x['khqk'] == '优秀':
             return 100
-        elif x['考核情况'] == '称职':
+        elif x['khqk'] == '称职':
             return 80
-        elif x['考核情况'] == '基本称职':
+        elif x['khqk'] == '基本称职':
             return 60
-        elif x['考核情况'] == '不称职':
+        elif x['khqk'] == '不称职':
             return 40
 
     df_kaohe_now['考核得分'] = df_kaohe_now.apply(cal_kaohe_score, axis=1)

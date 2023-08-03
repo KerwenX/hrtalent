@@ -19,9 +19,9 @@ def calculate_in_bank_working_experience_score(session):
     df_base = pd.read_sql(session.query(A01).statement, session.bind)
 
     #筛选出非高管和首席的员工
-    df_base = df_base[df_base['任职形式'] == '担任']
+    # df_base = df_base[df_base['任职形式'] == '担任'] # TODO 没有任职形式字段
     df_base = df_base[df_base['dept_code'] != '高管']
-    df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)]
+    # df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)] # code error
     df_base = df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', 'a0141', 'a01145','a01686']]
 
     #计算入行年限得分
@@ -39,8 +39,11 @@ def calculate_in_bank_working_experience_score(session):
         elif 20 <= x:
             return 100
 
-    df_base['入行年限'] = df_base['a0141'].apply(lambda x: (datetime.datetime.now() - datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')).days / 365)
-    df_base['当期岗位工作年限'] = df_base['a01145'].apply(lambda x: (datetime.datetime.now() - datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')).days / 365)
+    # TODO code modify
+    # df_base['入行年限'] = df_base['a0141'].apply(lambda x: (datetime.datetime.now() - datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')).days / 365)
+    df_base['入行年限'] = df_base['a0141'].apply(lambda x: (datetime.datetime.now() - x).days / 365)
+    # df_base['当期岗位工作年限'] = df_base['a01145'].apply(lambda x: (datetime.datetime.now() - datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')).days / 365)
+    df_base['当期岗位工作年限'] = df_base['a01145'].apply(lambda x: (datetime.datetime.now() - x).days / 365)
     #计算入行年限得分
     df_base['在行持续服务年限得分'] = df_base['入行年限'].apply(cal_inworking_score)
 
@@ -98,7 +101,7 @@ def calculate_in_bank_working_experience_score(session):
 
 
     # 读取员工序列表
-    df_seq = pd.read_excel('seqdata\员工序列表.xlsx', dtype=str)
+    df_seq = pd.read_excel('seqdata\员工序列表.xlsx', dtype=str) # TODO 没有员工序列表
 
     # 将员工序列表与基础信息表合并
     df_base_merge_seq = pd.merge(df_base, df_seq[['a0188', '一级序列', '二级序列']], on='a0188', how='left')

@@ -12,6 +12,7 @@ from models.layer1_model import A01,A04,Bm_gxsjb
 
 def cal_learning_growing_up_score(session):
 
+    # TODO 还没修改
     #内训师
     df_peixun= pd.read_excel('seqdata\内训师、学习平台、全员轮训数据.xls', dtype=str, sheet_name='内训师')
     df_peixun.rename(columns={'工号':'a0188'}, inplace=True)

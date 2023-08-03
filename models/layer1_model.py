@@ -44,29 +44,33 @@ class A04(Base):
 class A8145(Base):
     __tablename__ = 'a8145'
     recordid = Column(INTEGER,nullable=False,primary_key=True,autoincrement=True) # record id
+    a0188 = Column(INTEGER, nullable=False, index=True)  # 员工号，姓名
     a81452 = Column(DATETIME(8),nullable=True) #发现日期
     a81453 = Column(VARCHAR(20),nullable=True) #扣分
 
     def __repr__(self):
-        return f"<A8145(a81452='{self.a81452}',a81453='{self.a81453}')>"
+        return f"<A8145(a0188='{self.a0188}',a81452='{self.a81452}',a81453='{self.a81453}')>"
 
 class A815(Base):
     __tablename__ = 'a815'
     recordid = Column(INTEGER, nullable=False, primary_key=True, autoincrement=True)  # record id
     a0188 = Column(INTEGER,nullable=False,index=True) # 员工号，姓名
     a81535 = Column(VARCHAR(5),nullable=True)# 表彰奖励年月
+    a81531 = Column(VARCHAR(20),nullable=True) # 表彰奖励级别
 
     def __repr__(self):
-        return f"<A815(a0188='{self.a0188}',a81535='{self.a81535}')>"
+        return f"<A815(a0188='{self.a0188}',a81535='{self.a81535}',a81531='{self.a81531}')>"
 
 
 class A8192(Base):
     __tablename__ = 'a8192'
     recordid = Column(INTEGER, nullable=False, primary_key=True, autoincrement=True)  # record id
+    a81923 = Column(VARCHAR(1000),nullable=True) # 惩罚
+    a81921 = Column(DATETIME(8),nullable=True) #惩处年度
     a0188 = Column(INTEGER,nullable=False) #姓名
 
     def __repr__(self):
-        return f"<A8192(a0188='{self.a0188}')>"
+        return f"<A8192(a0188='{self.a0188}',a81921='{self.a81921}',a81923='{self.a81923}')>"
 
 class A832(Base):
     __tablename__ = 'a832'
@@ -79,11 +83,12 @@ class A832(Base):
 class A864(Base):
     __tablename__ = 'a864'
     recordid = Column(INTEGER, nullable=False, primary_key=True, autoincrement=True)  # record id
+    name = Column(VARCHAR(20),nullable=False) # 亲属姓名
     a0188 = Column(INTEGER, nullable=False)  # 姓名
     a86412 = Column(VARCHAR(30), nullable=False)  # 与本人关系
 
     def __repr__(self):
-        return f"<A864(a0188='{self.a0188}',a86412='{self.a86412}')>"
+        return f"<A864(a0188='{self.a0188}',a86412='{self.a86412}',name='{self.name}')>"
 
 class A865(Base):
     __tablename__ = 'a865'
@@ -98,25 +103,28 @@ class A865(Base):
 class A866(Base):
     __tablename__ = 'a866'
     recordid = Column(INTEGER, nullable=False, primary_key=True, autoincrement=True)  # record id
+    a0188 = Column(INTEGER, nullable=False)  # 姓名
     a8661 = Column(DATETIME(8),nullable=False) #起始时间
     a8662 = Column(DATETIME(8),nullable=True) #终止时间
 
     def __repr__(self):
-        return f"<A866(a8661='{self.a8661}',a8662='{self.a8662}')>"
+        return f"<A866(a0188='{self.a0188}',a8661='{self.a8661}',a8662='{self.a8662}')>"
 
 class A875(Base):
     __tablename__ = 'a875'
     recordid = Column(INTEGER, nullable=False, primary_key=True, autoincrement=True)  # record id
-    gz_ym = Column(VARCHAR(6),nullable=False) # 年月
-    a0188 = Column(INT(4),nullable=False,index=True) # 姓名
+    a8759 = Column(VARCHAR(6),nullable=False) # 年月
+    a0188 = Column(INTEGER,nullable=False,index=True) # 姓名
+    khqk = Column(VARCHAR(20),nullable=False) # 考核情况
 
     def __repr__(self):
-        return f"<A875(gz_ym='{self.gz_ym}',a0188='{self.a0188}')>"
+        return f"<A875(a8759='{self.a8759}',a0188='{self.a0188}',khqk='{self.khqk}')>"
 
 
 class Bm_gxsjb(Base):
     __tablename__ = 'bm_gxsjb'
-    recordid = Column(INTEGER, nullable=False, primary_key=True, autoincrement=True)  # record id
+    bm0000 = Column(VARCHAR(10), nullable=False, primary_key=True)  # record id
+    mc0000 = Column(VARCHAR(40),nullable=False,index=True) # name
     sfsyl = Column(VARCHAR(20),nullable=True) #是否双一流
     sfjbw = Column(VARCHAR(20),nullable=True) #是否985
     sf = Column(VARCHAR(20),nullable=True) #是否211
@@ -124,7 +132,7 @@ class Bm_gxsjb(Base):
     sfqs2 = Column(VARCHAR(20),nullable=True) #是否QS200
 
     def __repr__(self):
-        return f"<Bm_gxsjb(sfsyl='{self.sfsyl}',sfjbw='{self.sfjbw}',sf='{self.sf}',qs100='{self.qs100}',sfqs2='{self.sfqs2}')>"
+        return f"<Bm_gxsjb(mc0000='{self.mc0000}',sfsyl='{self.sfsyl}',sfjbw='{self.sfjbw}',sf='{self.sf}',qs100='{self.qs100}',sfqs2='{self.sfqs2}')>"
 
 # class Empat17(Base):
 # __tablename__ = 'empat17'
@@ -145,9 +153,10 @@ class Gxlygydjx(Base):
     __tablename__ = 'gxlygydjx'
     recordid = Column(INTEGER, nullable=False, primary_key=True, autoincrement=True)  # record id
     yjjxje = Column(NUMERIC(19,2),nullable=True) #月均绩效金额
+    year = Column(VARCHAR(4),nullable=True) #年份
 
     def __repr__(self):
-        return f"<Gxlygydjx(yjjxje='{self.yjjxje}')>"
+        return f"<Gxlygydjx(yjjxje='{self.yjjxje}',year='{self.year}')>"
 
 class K_month(Base):
     __tablename__ = 'k_month'
@@ -177,5 +186,4 @@ class Tpersonality(Base):
 
     def __repr__(self):
         return f"<Tpersonality(dominance='{self.dominance}',influence='{self.influence}',steadiness='{self.steadiness}',compliance='{self.compliance}')>"
-
 

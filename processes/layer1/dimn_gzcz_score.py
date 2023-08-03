@@ -19,19 +19,19 @@ def cal_working_growing_up_score(now_year,session):
 
     #考核得分计算
     def cal_kaohe_score(x):
-        if x['考核情况'] == '优秀':
+        if x['khqk'] == '优秀':
             return 100
-        elif x['考核情况'] == '称职':
+        elif x['khqk'] == '称职':
             return 80
-        elif x['考核情况'] == '基本称职':
+        elif x['khqk'] == '基本称职':
             return 60
-        elif x['考核情况'] == '不称职':
+        elif x['khqk'] == '不称职':
             return 40
 
     #计算5年考核得分
     def cal_5year_score(x):
         score = 0
-        if x['gz_ym'].min() <= now_year - 5:
+        if x['a8759'].min() <= now_year - 5:
             score = x['考核得分'].mean()
         else:
             score = 0
@@ -40,7 +40,7 @@ def cal_working_growing_up_score(now_year,session):
     #计算3年考核得分
     def cal_3year_score(x):
         score = 0
-        if x['gz_ym'].min() <= now_year - 3:
+        if x['a8759'].min() <= now_year - 3:
             score = x['考核得分'].mean()
         else:
             score = 0
@@ -49,11 +49,11 @@ def cal_working_growing_up_score(now_year,session):
 
     #年度考核
     df_kaohe = pd.read_sql(session.query(A875).statement, session.bind)
-    df_kaohe = df_kaohe[df_kaohe['任职形式'] == '担任']
-    df_kaohe['gz_ym'] = df_kaohe['gz_ym'].astype(int)
+    # df_kaohe = df_kaohe[df_kaohe['任职形式'] == '担任'] # TODO 没有任职形式字段
+    df_kaohe['a8759'] = df_kaohe['a8759'].astype(int)
     df_kaohe['考核得分'] = df_kaohe.apply(cal_kaohe_score, axis=1)
-    df_kaohe_5year = df_kaohe[df_kaohe['gz_ym'].apply(lambda x: x >= now_year - 5 and x <= now_year - 1)]
-    df_kaohe_3year = df_kaohe[df_kaohe['gz_ym'].apply(lambda x: x >= now_year - 3 and x <= now_year - 1)]
+    df_kaohe_5year = df_kaohe[df_kaohe['a8759'].apply(lambda x: x >= now_year - 5 and x <= now_year - 1)]
+    df_kaohe_3year = df_kaohe[df_kaohe['a8759'].apply(lambda x: x >= now_year - 3 and x <= now_year - 1)]
     df_kaohe_5year_g = df_kaohe_5year.groupby(['a0188']).apply(cal_5year_score)
     df_kaohe_3year_g = df_kaohe_3year.groupby(['a0188']).apply(cal_3year_score)
     df_kaohe_5year_g.rename('5年内考核评分成长',inplace=True)
@@ -172,7 +172,7 @@ def cal_working_growing_up_score(now_year,session):
 
     df_longhu = pd.read_sql(session.query(Gxlygydjx).statement, session.bind)
     df_longhu['year'] = df_longhu['year'].astype(int)
-    df_xulie = pd.read_excel('seqdata\员工序列表.xlsx', dtype=str)
+    df_xulie = pd.read_excel('seqdata\员工序列表.xlsx', dtype=str) # TODO 没有员工序列表
     df_longhu= pd.merge(df_longhu, df_xulie[['a0188', '二级序列']], on = 'a0188', how='left')
     df_longhu['二级序列'].fillna('未知分类', inplace=True)
     df_longhu['yjjxje'].fillna(0, inplace=True)
@@ -196,7 +196,7 @@ def cal_working_growing_up_score(now_year,session):
     df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', 'a0141', 'a01145','a01686']]
 
     #筛选出非高管和首席的员工
-    df_base = df_base[df_base['任职形式'] == '担任']
+    df_base = df_base[df_base['任职形式'] == '担任'] # TODO 没有任职形式
     df_base = df_base[df_base['dept_code'] != '高管']
     df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)]
 
