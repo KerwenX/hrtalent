@@ -29,14 +29,17 @@ class A01(Base):
 class A04(Base):
     __tablename__ = 'a04'
     recordid = Column(INTEGER,nullable=False,primary_key=True,autoincrement=True) # recordid
-    endtime = Column(DATETIME(8),nullable=False) #终止时间
-    a0431 = Column(VARCHAR(200),nullable=False) #学校
-    fjo = Column(VARCHAR(1000),nullable=True) #学历附件
-    fjt = Column(VARCHAR(1000),nullable=True) #学位附件
-    fj3 = Column(VARCHAR(1000),nullable=True) #学信网在线验证报告
+    a0447 = Column(VARCHAR(20), nullable=False)  # 教育类型
+    endtime = Column(DATETIME(8), nullable=False)  # 终止时间
+    a0431 = Column(VARCHAR(200), nullable=False)  # 学校
+    a0429 = Column(VARCHAR(20), nullable=False)  # 学历
+    a0440 = Column(VARCHAR(100), nullable=True)  # 学位
+    fjo = Column(VARCHAR(1000), nullable=True)  # 学历附件
+    fjt = Column(VARCHAR(1000), nullable=True)  # 学位附件
+    fj3 = Column(VARCHAR(1000), nullable=True)  # 学信网在线验证报告
 
     def __repr__(self):
-        return f"<A04(endtime='{self.endtime}',a0431='{self.a0431}',fjo='{self.fjo}',fjt='{self.fjt}',fj3='{self.fj3}')>"
+        return f"<A04(a0447='{self.a0447}',endtime='{self.endtime}',a0431='{self.a0431}',a0429='{self.a0429}',a0440='{self.a0440}',fjo='{self.fjo}',fjt='{self.fjt}',fj3='{self.fj3}')>"
 
 class A8145(Base):
     __tablename__ = 'a8145'
@@ -76,10 +79,11 @@ class A832(Base):
 class A864(Base):
     __tablename__ = 'a864'
     recordid = Column(INTEGER, nullable=False, primary_key=True, autoincrement=True)  # record id
-    a0188 = Column(INTEGER,nullable=False) #姓名
+    a0188 = Column(INTEGER, nullable=False)  # 姓名
+    a86412 = Column(VARCHAR(30), nullable=False)  # 与本人关系
 
     def __repr__(self):
-        return f"<A864(a0188='{self.a0188}')>"
+        return f"<A864(a0188='{self.a0188}',a86412='{self.a86412}')>"
 
 class A865(Base):
     __tablename__ = 'a865'
