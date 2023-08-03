@@ -9,20 +9,21 @@ import numpy as np
 import datetime
 import time
 import re
+from models.layer1_model import A01,A04,Bm_gxsjb,A832
 
 
-def cal_professional_ability_score():
+def cal_professional_ability_score(session):
 
     #教育情况
-    df_jiaoyu = pd.read_excel('seqdata\jiaoyubeijing.xlsx', dtype=str)
+    df_jiaoyu = pd.read_sql(session.query(A04).statement, session.bind)
 
-    df_gaoxiao = pd.read_excel('seqdata\高校数据库v5.xlsx', dtype=str)
+    df_gaoxiao = pd.read_sql(session.query(Bm_gxsjb).statement, session.bind)
 
-    school_shuangyiliu = set([i.split('（')[0] for i in df_gaoxiao[df_gaoxiao['是否双一流'] == '是']['学校名称'].to_list()])
-    school_211 = set([i.split('（')[0] for i in df_gaoxiao[df_gaoxiao['是否211'] == '是']['学校名称'].to_list()])
-    school_985 = set([i.split('（')[0] for i in df_gaoxiao[df_gaoxiao['是否985'] == '是']['学校名称'].to_list()])
-    school_qs100 = set([i.split('（')[0] for i in df_gaoxiao[df_gaoxiao['是否QS100'] == '是']['学校名称'].to_list()])
-    school_qs100_200 = set([i.split('（')[0] for i in df_gaoxiao[(df_gaoxiao['是否QS200'] == '是') & (df_gaoxiao['是否QS100'] == '否')]['学校名称'].to_list()])
+    school_shuangyiliu = set([i.split('（')[0] for i in df_gaoxiao[df_gaoxiao['sfsyl'] == '是']['mc0000'].to_list()])
+    school_211 = set([i.split('（')[0] for i in df_gaoxiao[df_gaoxiao['sf'] == '是']['mc0000'].to_list()])
+    school_985 = set([i.split('（')[0] for i in df_gaoxiao[df_gaoxiao['sfjbw'] == '是']['mc0000'].to_list()])
+    school_qs100 = set([i.split('（')[0] for i in df_gaoxiao[df_gaoxiao['qs100'] == '是']['mc0000'].to_list()])
+    school_qs100_200 = set([i.split('（')[0] for i in df_gaoxiao[(df_gaoxiao['sfqs2'] == '是') & (df_gaoxiao['qs100'] == '否')]['mc0000'].to_list()])
 
     df_jiaoyu_quanrizhi = df_jiaoyu[df_jiaoyu['教育类型'] == '全日制']
 
@@ -37,9 +38,9 @@ def cal_professional_ability_score():
             zhengshu_coe = 0.8
             if x['学历'] == '博士研究生' or x['学位'] == '博士学位':
                 base_score = 100
-                if x['学校'] in school_qs100 or x['学校'] in school_985:
+                if x['a0431'] in school_qs100 or x['a0431'] in school_985:
                     school_coe = 1.5
-                elif x['学校'] in school_211 or x['学校'] in school_shuangyiliu or x['学校'] in school_qs100_200:
+                elif x['a0431'] in school_211 or x['a0431'] in school_shuangyiliu or x['a0431'] in school_qs100_200:
                     school_coe = 1.3
                 if x['学历'] == '博士研究生' and x['学位'] == '博士学位':
                     zhengshu_coe = 1
@@ -47,9 +48,9 @@ def cal_professional_ability_score():
                     zhengshu_coe = 0.8
             elif x['学历'] in ['硕士研究生', '硕士', '双硕士'] or x['学位'] == '硕士学位':
                 base_score = 90
-                if x['学校'] in school_qs100 or x['学校'] in school_985:
+                if x['a0431'] in school_qs100 or x['a0431'] in school_985:
                     school_coe = 1.5
-                elif x['学校'] in school_211 or x['学校'] in school_shuangyiliu or x['学校'] in school_qs100_200:
+                elif x['a0431'] in school_211 or x['a0431'] in school_shuangyiliu or x['a0431'] in school_qs100_200:
                     school_coe = 1.3
                 if x['学历'] in ['硕士研究生', '硕士', '双硕士'] and x['学位'] == '硕士学位':
                     zhengshu_coe = 1
@@ -57,9 +58,9 @@ def cal_professional_ability_score():
                     zhengshu_coe = 0.8           
             elif x['学历'] in ['大学本科', '双本科'] or x['学位'] == '学士学位':
                 base_score = 80
-                if x['学校'] in school_qs100 or x['学校'] in school_985:
+                if x['a0431'] in school_qs100 or x['a0431'] in school_985:
                     school_coe = 1.5
-                elif x['学校'] in school_211 or x['学校'] in school_shuangyiliu or x['学校'] in school_qs100_200:
+                elif x['a0431'] in school_211 or x['a0431'] in school_shuangyiliu or x['a0431'] in school_qs100_200:
                     school_coe = 1.3
                 if x['学历'] in ['大学本科', '双本科'] and x['学位'] == '学士学位':
                     zhengshu_coe = 1
@@ -79,18 +80,18 @@ def cal_professional_ability_score():
 
     df_jiaoyu_quanrizhi['学校得分'] = df_jiaoyu_quanrizhi.apply(cal_quanrizhi_score, axis=1)
 
-    df_jiaoyu_quanrizhi_group = df_jiaoyu_quanrizhi.groupby(['员工号']).apply(lambda x: x['学校得分'].max())
+    df_jiaoyu_quanrizhi_group = df_jiaoyu_quanrizhi.groupby(['a0188']).apply(lambda x: x['学校得分'].max())
     df_jiaoyu_quanrizhi_group.rename('全日制教育得分', inplace=True)
 
     #职称情况得分
     #员工统计
-    df_base = pd.read_excel('seqdata\基本信息_20230620170630.xlsx', dtype=str)
-    df_base[['员工号', '姓名', '一级机构', '二级机构', '中心', '岗位', '聘任职业技术等级']]
+    df_base = pd.read_sql(session.query(A01).statement, session.bind)
+    df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', '聘任职业技术等级']]
 
     #筛选出非高管和首席的员工
     df_base = df_base[df_base['任职形式'] == '担任']
-    df_base = df_base[df_base['中心'] != '高管']
-    df_base = df_base[df_base['岗位'].apply(lambda x: '首席' not in x)]
+    df_base = df_base[df_base['dept_code'] != '高管']
+    df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)]
 
 
     def cal_zhicheng_score(x):
@@ -109,8 +110,8 @@ def cal_professional_ability_score():
     
     #技术资格得分
     df_zhengshu_score = pd.read_excel('seqdata\江南农商银行_专业序列资质标签加分表 v5 20230713.xlsx', sheet_name='Sheet3')
-    df_zhengshu = pd.read_excel('seqdata\zhiyezhengshu.xlsx', dtype=str)
-    df_zhengshu_defen = pd.merge(df_zhengshu[['员工号', '证书名称']], df_zhengshu_score[['证书名称', '名称', '等级', '标签得分']], on='证书名称', how='left')
+    df_zhengshu = pd.read_sql(session.query(A832).statement, session.bind)
+    df_zhengshu_defen = pd.merge(df_zhengshu[['a0188', 'a83213']], df_zhengshu_score[['a83213', '名称', '等级', '标签得分']], on='a83213', how='left')
     
     def cal_zhengshu_score(x):
         final_score = 0
@@ -130,13 +131,13 @@ def cal_professional_ability_score():
         return final_score
 
 
-    df_zhengshu_defen_g = df_zhengshu_defen.groupby(['员工号']).apply(cal_zhengshu_score)
+    df_zhengshu_defen_g = df_zhengshu_defen.groupby(['a0188']).apply(cal_zhengshu_score)
     df_zhengshu_defen_g.rename('技术资格情况得分', inplace=True)
 
 
-    df_result = df_base[['员工号', '职称情况得分']]
-    df_result = pd.merge(df_result, df_jiaoyu_quanrizhi_group, on='员工号', how='left')
-    df_result = pd.merge(df_result, df_zhengshu_defen_g, on='员工号', how='left')
+    df_result = df_base[['a0188', '职称情况得分']]
+    df_result = pd.merge(df_result, df_jiaoyu_quanrizhi_group, on='a0188', how='left')
+    df_result = pd.merge(df_result, df_zhengshu_defen_g, on='a0188', how='left')
 
     return df_result
 

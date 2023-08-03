@@ -8,12 +8,13 @@ import pandas as pd
 import numpy as np
 import datetime
 import time
+from models.layer1_model import A01,A815
 
 
-def cal_honor_score(now_year):
+def cal_honor_score(now_year,session):
     now_year = int(now_year)
 
-    df_honor = pd.read_excel('seqdata\奖励子集_20230628140513.xlsx', dtype=str)
+    df_honor = pd.read_sql(session.query(A815).statement, session.bind)
 
     #行内奖励
     df_honor_past_in = df_honor[df_honor['表彰奖励级别'] == '总行级']
@@ -65,7 +66,7 @@ def cal_honor_score(now_year):
 
 
     #计算过往荣誉得分
-    df_honor_past_in_group = df_honor_past_in[['员工号', '表彰奖励年度']].groupby(['员工号']).apply(lambda x: cal_in_honor_score(x['表彰奖励年度'].to_list(), now_year))
+    df_honor_past_in_group = df_honor_past_in[['a0188', '表彰奖励年度']].groupby(['a0188']).apply(lambda x: cal_in_honor_score(x['表彰奖励年度'].to_list(), now_year))
     df_honor_past_in_group.rename('过往行内表彰得分',inplace=True)
 
     #行外奖励
@@ -187,7 +188,7 @@ def cal_honor_score(now_year):
         return final_score
 
 
-    df_honor_past_out_group = df_honor_past_out[['员工号', '表彰奖励级别', '表彰奖励年度']].groupby(['员工号']).apply(lambda x: cal_out_honor_score(x[['表彰奖励级别', '表彰奖励年度']].values.tolist(), now_year))
+    df_honor_past_out_group = df_honor_past_out[['a0188', '表彰奖励级别', '表彰奖励年度']].groupby(['a0188']).apply(lambda x: cal_out_honor_score(x[['表彰奖励级别', '表彰奖励年度']].values.tolist(), now_year))
     df_honor_past_out_group.rename('过往行外表彰得分',inplace=True)
 
 
@@ -200,7 +201,7 @@ def cal_honor_score(now_year):
         return min(100, 50 * len(x))
 
 
-    df_honor_now_in_group = df_honor_now_in[['员工号', '表彰奖励年度']].groupby(['员工号']).apply(lambda x: cal_now_in_honor_score(x['表彰奖励年度'].to_list()))
+    df_honor_now_in_group = df_honor_now_in[['a0188', '表彰奖励年度']].groupby(['a0188']).apply(lambda x: cal_now_in_honor_score(x['表彰奖励年度'].to_list()))
     df_honor_now_in_group.rename('当年行内表彰得分',inplace=True)
 
 
@@ -224,24 +225,24 @@ def cal_honor_score(now_year):
         return min(100, score)
 
 
-    df_honor_now_out_group = df_honor_now_out[['员工号', '表彰奖励级别']].groupby(['员工号']).apply(lambda x: cal_now_out_honor_score(x['表彰奖励级别'].to_list()))
+    df_honor_now_out_group = df_honor_now_out[['a0188', '表彰奖励级别']].groupby(['a0188']).apply(lambda x: cal_now_out_honor_score(x['表彰奖励级别'].to_list()))
     df_honor_now_out_group.rename('当年行外表彰得分',inplace=True)
 
 
     #员工统计
-    df_base = pd.read_excel('seqdata\基本信息_20230620170630.xlsx', dtype=str)
-    df_base[['员工号', '姓名', '一级机构', '二级机构', '中心', '岗位', '入行时间', '任现岗位时间','行员等级']]
+    df_base = pd.read_sql(session.query(A01).statement, session.bind)
+    df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', 'a0141', 'a01145','a01686']]
 
     #筛选出非高管和首席的员工
     df_base = df_base[df_base['任职形式'] == '担任']
-    df_base = df_base[df_base['中心'] != '高管']
-    df_base = df_base[df_base['岗位'].apply(lambda x: '首席' not in x)]
+    df_base = df_base[df_base['dept_code'] != '高管']
+    df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)]
 
 
-    df_result = pd.merge(df_base[['员工号']], df_honor_past_in_group, on='员工号', how='left')
-    df_result = pd.merge(df_result, df_honor_past_out_group, on='员工号', how='left')
-    df_result = pd.merge(df_result, df_honor_now_in_group, on='员工号', how='left')
-    df_result = pd.merge(df_result, df_honor_now_out_group, on='员工号', how='left')
+    df_result = pd.merge(df_base[['a0188']], df_honor_past_in_group, on='a0188', how='left')
+    df_result = pd.merge(df_result, df_honor_past_out_group, on='a0188', how='left')
+    df_result = pd.merge(df_result, df_honor_now_in_group, on='a0188', how='left')
+    df_result = pd.merge(df_result, df_honor_now_out_group, on='a0188', how='left')
     df_result.fillna(0, inplace=True)
     df_result['在行累积工作荣誉得分'] = df_result['过往行内表彰得分'] * 0.5 + df_result['过往行内表彰得分'] * 0.5
     df_result['当年工作荣誉得分'] = df_result['当年行内表彰得分'] * 0.5 + df_result['当年行内表彰得分'] * 0.5

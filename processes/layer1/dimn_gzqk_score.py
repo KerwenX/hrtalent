@@ -11,9 +11,10 @@ import numpy as np
 import datetime
 import time
 import os
+from models.layer1_model import A01,K_month,A875,Gxlygydjx
 
 
-def calculate_working_status_score(now_year):
+def calculate_working_status_score(now_year,session):
     #计算工作状态得分
 
     #读取KOL数据    
@@ -25,7 +26,7 @@ def calculate_working_status_score(now_year):
         df_temp['统计年份'] = kol_name.replace('.csv', '')
         df_kol_list.append(df_temp)
     df_kol = pd.concat(df_kol_list, axis=0)
-    df_kol.rename(columns = {'USERID': '员工号', 'USERNAME': '姓名', '(EXPR)': 'KOL积分'}, inplace=True)
+    df_kol.rename(columns = {'USERID': 'a0188', 'USERNAME': 'a0101', '(EXPR)': 'KOL积分'}, inplace=True)
 
     #KOL得分统计
     df_kol_now = df_kol[df_kol['统计年份'] == now_year]
@@ -42,7 +43,7 @@ def calculate_working_status_score(now_year):
         df_temp['统计年月'] = journal_name.replace('.xls', '')
         df_journal_list.append(df_temp)
     df_journal = pd.concat(df_journal_list, axis=0)
-    df_journal.rename(columns={'用户CODE': '员工号'}, inplace=True)
+    df_journal.rename(columns={'用户CODE': 'a0188'}, inplace=True)
     df_journal_now = df_journal[df_journal['统计年月'].apply(lambda x: now_year in x)]
 
     #日志得分统计
@@ -54,7 +55,7 @@ def calculate_working_status_score(now_year):
     df_journal_now['互动总量'] = df_journal_now['互动总量'].astype(float)
     df_journal_now['总字数'] = df_journal_now['总字数'].astype(float)
     df_journal_now['上榜次数'] = df_journal_now['上榜次数'].astype(float)
-    df_journal_now_by_month = df_journal_now.groupby('员工号').mean().reset_index()
+    df_journal_now_by_month = df_journal_now.groupby('a0188').mean().reset_index()
 
     df_journal_now_by_month['发布数量得分'] = df_journal_now_by_month['发布量'] / df_journal_now_by_month['发布量'].max() * 20
     df_journal_now_by_month['发布字数得分'] = df_journal_now_by_month['总字数'] / df_journal_now_by_month['总字数'].max() * 20
@@ -64,23 +65,23 @@ def calculate_working_status_score(now_year):
 
 
     #员工统计
-    df_base = pd.read_excel('seqdata\基本信息_20230620170630.xlsx', dtype=str)
-    df_base = df_base[['员工号', '姓名', '一级机构', '二级机构', '中心', '岗位', '入行时间', '任现岗位时间','行员等级']]
+    df_base = pd.read_sql(session.query(A01).statement, session.bind)
+    df_base = df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', 'a0141', 'a01145','a01686']]
 
     #筛选出非高管和首席的员工
     df_base = df_base[df_base['任职形式'] == '担任']
-    df_base = df_base[df_base['中心'] != '高管']
-    df_base = df_base[df_base['岗位'].apply(lambda x: '首席' not in x)]
+    df_base = df_base[df_base['dept_code'] != '高管']
+    df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)]
 
 
     #工具使用情况得分
-    df_result = pd.merge(df_base[['员工号']], df_kol_now[['员工号', 'KOL得分']], on='员工号', how='left')
-    df_result = pd.merge(df_result, df_journal_now_by_month[['员工号', '日志得分']], on='员工号', how='left')
+    df_result = pd.merge(df_base[['a0188']], df_kol_now[['a0188', 'KOL得分']], on='a0188', how='left')
+    df_result = pd.merge(df_result, df_journal_now_by_month[['a0188', '日志得分']], on='a0188', how='left')
     df_result.fillna(0, inplace=True)
     df_result['工具使用情况得分'] = df_result['KOL得分'] * 0.5 + df_result['日志得分'] * 0.5
 
     #考勤数据
-    df_kaoqin = pd.read_excel('seqdata\月结果_20230627160707.xlsx', dtype=str)
+    df_kaoqin = pd.read_sql(session.query(K_month).statement, session.bind)
 
     def cal_kaoqin_score(x):
         if x['事病假天数'] == 0:
@@ -99,17 +100,17 @@ def calculate_working_status_score(now_year):
             return 40
 
     #考勤得分统计
-    df_kaoqin_now = df_kaoqin[df_kaoqin['年月'].apply(lambda x: now_year in x)]
-    df_kaoqin_now['出勤情况得分'] = df_kaoqin_now['事假天数'].astype(int) + df_kaoqin_now['病假天数'].astype(int)
-    df_kaoqin_now_sum_month = df_kaoqin_now[['员工号', '事病假天数']].groupby(['员工号']).sum().reset_index()
+    df_kaoqin_now = df_kaoqin[df_kaoqin['gz_ym'].apply(lambda x: now_year in x)]
+    df_kaoqin_now['出勤情况得分'] = df_kaoqin_now['leave_time_11'].astype(int) + df_kaoqin_now['leave_time_12'].astype(int)
+    df_kaoqin_now_sum_month = df_kaoqin_now[['a0188', '事病假天数']].groupby(['a0188']).sum().reset_index()
     df_kaoqin_now_sum_month['出勤情况得分'] = df_kaoqin_now_sum_month.apply(cal_kaoqin_score, axis=1)
     df_kaoqin_now_sum_month['出勤情况得分'].fillna(100, inplace=True)
 
-    df_result = pd.merge(df_result, df_kaoqin_now_sum_month[['员工号', '出勤情况得分']], on='员工号', how='left')
+    df_result = pd.merge(df_result, df_kaoqin_now_sum_month[['a0188', '出勤情况得分']], on='a0188', how='left')
 
     #考核数据读取
-    df_kaohe = pd.read_excel('seqdata\年度考核子集_20230504141856.xlsx', dtype=str)
-    df_kaohe_now = df_kaohe[df_kaohe['年度'] == now_year]
+    df_kaohe = pd.read_sql(session.query(A875).statement, session.bind)
+    df_kaohe_now = df_kaohe[df_kaohe['gz_ym'] == now_year]
     df_kaohe_now = df_kaohe_now[df_kaohe_now['任职形式'] == '担任']
 
     #考核得分计算
@@ -126,20 +127,20 @@ def calculate_working_status_score(now_year):
     df_kaohe_now['考核得分'] = df_kaohe_now.apply(cal_kaohe_score, axis=1)
 
     #龙虎榜数据读取
-    df_longhu = pd.read_excel('seqdata\龙虎榜排名_20230509153725.xlsx', dtype=str)
-    df_longhu_now = df_longhu[df_longhu['年度'] == now_year]
+    df_longhu = pd.read_sql(session.query(Gxlygydjx).statement, session.bind)
+    df_longhu_now = df_longhu[df_longhu['year'] == now_year]
 
     #读取员工序列表
     df_xulie = pd.read_excel('seqdata\员工序列表.xlsx', dtype=str)
 
     #龙虎榜序列重新计算
-    df_longhu_now = pd.merge(df_longhu_now, df_xulie[['员工号', '二级序列']], on = '员工号', how='left')
+    df_longhu_now = pd.merge(df_longhu_now, df_xulie[['a0188', '二级序列']], on = 'a0188', how='left')
 
     df_longhu_now['二级序列'].fillna('未知分类', inplace=True)
-    df_longhu_now['月均绩效金额'].fillna(0, inplace=True)
-    df_longhu_now['月均绩效金额'] = df_longhu_now['月均绩效金额'].astype(float)
-    df_longhu_now['rank'] = df_longhu_now.groupby('二级序列')['月均绩效金额'].rank(ascending=False)
-    total_counts = df_longhu_now.groupby('二级序列')['员工号'].count()
+    df_longhu_now['yjjxje'].fillna(0, inplace=True)
+    df_longhu_now['yjjxje'] = df_longhu_now['yjjxje'].astype(float)
+    df_longhu_now['rank'] = df_longhu_now.groupby('二级序列')['yjjxje'].rank(ascending=False)
+    total_counts = df_longhu_now.groupby('二级序列')['a0188'].count()
     df_longhu_now['龙虎榜排名1'] = df_longhu_now.apply(lambda x: str(int(x['rank'])) + '/' + str(total_counts[x['二级序列']]), axis=1 )
 
     #计算龙虎榜得分
@@ -236,12 +237,12 @@ def calculate_working_status_score(now_year):
 
 
     df_longhu_now['龙虎榜得分'] = df_longhu_now.apply(cal_longhu_score, axis=1)
-    df_longhu_now = df_longhu_now[['员工号', '龙虎榜得分']].groupby('员工号').max()
+    df_longhu_now = df_longhu_now[['a0188', '龙虎榜得分']].groupby('a0188').max()
 
     #得分数据合并
 
-    df_result = pd.merge(df_result, df_kaohe_now[['员工号', '考核得分']], on='员工号', how='left')
-    df_result = pd.merge(df_result, df_longhu_now, on='员工号', how='left')
+    df_result = pd.merge(df_result, df_kaohe_now[['a0188', '考核得分']], on='a0188', how='left')
+    df_result = pd.merge(df_result, df_longhu_now, on='a0188', how='left')
     df_result['当年工作业绩评价得分'] = 0.5 * df_result['考核得分'] + 0.5 * df_result['龙虎榜得分']
 
     df_result.fillna(0, inplace=True)
