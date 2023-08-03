@@ -25,7 +25,7 @@ def cal_professional_ability_score(session):
     school_qs100 = set([i.split('（')[0] for i in df_gaoxiao[df_gaoxiao['qs100'] == '是']['mc0000'].to_list()])
     school_qs100_200 = set([i.split('（')[0] for i in df_gaoxiao[(df_gaoxiao['sfqs2'] == '是') & (df_gaoxiao['qs100'] == '否')]['mc0000'].to_list()])
 
-    df_jiaoyu_quanrizhi = df_jiaoyu[df_jiaoyu['教育类型'] == '全日制']
+    df_jiaoyu_quanrizhi = df_jiaoyu[df_jiaoyu['a0447'] == '全日制']
 
 
     def cal_quanrizhi_score(x):
@@ -36,39 +36,39 @@ def cal_professional_ability_score(session):
             base_score = 40
             school_coe = 1
             zhengshu_coe = 0.8
-            if x['学历'] == '博士研究生' or x['学位'] == '博士学位':
+            if x['a0429'] == '博士研究生' or x['a0440'] == '博士学位':
                 base_score = 100
                 if x['a0431'] in school_qs100 or x['a0431'] in school_985:
                     school_coe = 1.5
                 elif x['a0431'] in school_211 or x['a0431'] in school_shuangyiliu or x['a0431'] in school_qs100_200:
                     school_coe = 1.3
-                if x['学历'] == '博士研究生' and x['学位'] == '博士学位':
+                if x['a0429'] == '博士研究生' and x['a0440'] == '博士学位':
                     zhengshu_coe = 1
                 else:
                     zhengshu_coe = 0.8
-            elif x['学历'] in ['硕士研究生', '硕士', '双硕士'] or x['学位'] == '硕士学位':
+            elif x['a0429'] in ['硕士研究生', '硕士', '双硕士'] or x['a0440'] == '硕士学位':
                 base_score = 90
                 if x['a0431'] in school_qs100 or x['a0431'] in school_985:
                     school_coe = 1.5
                 elif x['a0431'] in school_211 or x['a0431'] in school_shuangyiliu or x['a0431'] in school_qs100_200:
                     school_coe = 1.3
-                if x['学历'] in ['硕士研究生', '硕士', '双硕士'] and x['学位'] == '硕士学位':
+                if x['a0429'] in ['硕士研究生', '硕士', '双硕士'] and x['a0440'] == '硕士学位':
                     zhengshu_coe = 1
                 else:
                     zhengshu_coe = 0.8           
-            elif x['学历'] in ['大学本科', '双本科'] or x['学位'] == '学士学位':
+            elif x['a0429'] in ['大学本科', '双本科'] or x['a0440'] == '学士学位':
                 base_score = 80
                 if x['a0431'] in school_qs100 or x['a0431'] in school_985:
                     school_coe = 1.5
                 elif x['a0431'] in school_211 or x['a0431'] in school_shuangyiliu or x['a0431'] in school_qs100_200:
                     school_coe = 1.3
-                if x['学历'] in ['大学本科', '双本科'] and x['学位'] == '学士学位':
+                if x['a0429'] in ['大学本科', '双本科'] and x['a0440'] == '学士学位':
                     zhengshu_coe = 1
                 else:
                     zhengshu_coe = 0.8 
-            elif x['学历'] in ['大学专科', '双大专'] :
+            elif x['a0429'] in ['大学专科', '双大专'] :
                 base_score = 60
-            elif x['学历'] in ['中等专科', '高中'] :
+            elif x['a0429'] in ['中等专科', '高中'] :
                 base_score = 50
             else:
                 base_score = 40
