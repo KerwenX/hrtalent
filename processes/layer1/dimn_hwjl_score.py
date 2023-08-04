@@ -13,7 +13,9 @@ from models.layer1_model import A01,A866,E01
 def calculate_in_bank_working_experience_score(session):
     # 岗位编码
     position_code = pd.read_sql(session.query(E01).statement, session.bind)
-    
+
+    now_year=2023
+
     def cal_working_time(x):
         #计算行外工作时间
         x['a8661'] = pd.to_datetime(x['a8661'])
@@ -56,8 +58,18 @@ def calculate_in_bank_working_experience_score(session):
     df_working_merge_base_g = df_working_merge_base.groupby('a0188').apply(cal_working_time)
     df_working_merge_base_g.rename('过去工作经验得分',inplace=True)
 
-    df_result = pd.merge(df_base[['a0188']], df_working_merge_base_g, on='a0188', how='left')
+    def cal_hire_type_score(x):
+        years = now_year - x['a0141'].year
+        if x['a01679'] in ['熟练用工','人才引进']:
+            if years <= 1:
+                return 100
+            elif 1 <years<=2:
+                return 70
+            elif 2<years<=3:
+                return 40
+            else:
+                return 0
+    df_base['录用类型得分'] = df_base[['a0141','a01679']].apply(cal_hire_type_score,axis=1)
+    df_result = pd.merge(df_base[['a0188','录用类型得分']], df_working_merge_base_g, on='a0188', how='left')
     df_result.fillna(0, inplace=True)
-
-
     return df_result

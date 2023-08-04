@@ -52,65 +52,125 @@ def cal_professional_ability_score(session):
 
     df_jiaoyu_quanrizhi = df_jiaoyu[
         df_jiaoyu['a0447'] == code_education_type[code_education_type['mc0000'] == '全日制', 'bm0000']]
+    df_jiaoyu_quanrizhi = df_jiaoyu_quanrizhi[df_jiaoyu_quanrizhi['endtime'].notnull()]
 
     def cal_quanrizhi_score(x):
+        before_2001 = x['endtime'] < datetime.datetime.strptime('2001-01-01','%Y-%m-%d')
+        has_fujian = not(pd.isna(x['fjo']) and pd.isna(x['fjt']) and pd.isna(x['fj3']))
         final_score = 0
         if x is None:
             final_score = 40
         else:
-            base_score = 40
+            base_score = 50
             school_coe = 1
-            zhengshu_coe = 0.8
+            zhengshu_coe = 0.9
             if x['a0429'] == code_xueli.loc[code_xueli['mc0000'] == '博士研究生', 'bm0000'] or x['a0440'] == code_xuewei.loc[
                 code_xuewei['mc0000'] == '博士学位', 'bm0000']:
                 base_score = 100
+                if before_2001:
+                    base_score = 200
+                else:
+                    base_score = 180
+
                 if x['a0431'] in school_qs100 or x['a0431'] in school_985:
-                    school_coe = 1.5
-                elif x['a0431'] in school_211 or x['a0431'] in school_shuangyiliu or x['a0431'] in school_qs100_200:
                     school_coe = 1.3
+                elif x['a0431'] in school_211 or x['a0431'] in school_shuangyiliu or x['a0431'] in school_qs100_200:
+                    school_coe = 1.2
                 if x['a0429'] == code_xueli.loc[code_xueli['mc0000'] == '博士研究生', 'bm0000'] and x['a0440'] == code_xuewei[
                     code_xuewei['mc0000'] == '博士学位', 'bm0000']:
                     zhengshu_coe = 1
                 else:
                     zhengshu_coe = 0.8
+
+                if before_2001:
+                    if has_fujian:
+                        zhengshu_coe = 1.3
+                    else:
+                        zhengshu_coe = 1.1
+                else:
+                    if has_fujian:
+                        zhengshu_coe = 1
+                    else:
+                        zhengshu_coe = 0
+
             elif x['a0429'] in [code_xueli.loc[code_xueli['mc0000'] == '硕士研究生', 'bm0000'],
                                 code_xueli.loc[code_xueli['mc0000'] == '硕士', 'bm0000'],
                                 code_xueli.loc[code_xueli['mc0000'] == '双硕士', 'bm0000']] or x['a0440'] == code_xuewei.loc[
                 code_xuewei['mc0000'] == '硕士学位', 'bm0000']:
-                base_score = 90
-                if x['a0431'] in school_qs100 or x['a0431'] in school_985:
-                    school_coe = 1.5
-                elif x['a0431'] in school_211 or x['a0431'] in school_shuangyiliu or x['a0431'] in school_qs100_200:
-                    school_coe = 1.3
-                if x['a0429'] in [code_xueli.loc[code_xueli['mc0000'] == '硕士研究生', 'bm0000'],
-                                  code_xueli.loc[code_xueli['mc0000'] == '硕士', 'bm0000'],
-                                  code_xueli.loc[code_xueli['mc0000'] == '双硕士', 'bm0000']] and x['a0440'] == code_xuewei[
-                    code_xuewei['mc0000'] == '硕士学位', 'bm0000']:
-                    zhengshu_coe = 1
+                if before_2001:
+                    base_score = 150
                 else:
-                    zhengshu_coe = 0.8
+                    base_score = 140
+
+                if x['a0431'] in school_qs100 or x['a0431'] in school_985:
+                    school_coe = 1.3
+                elif x['a0431'] in school_211 or x['a0431'] in school_shuangyiliu or x['a0431'] in school_qs100_200:
+                    school_coe = 1.2
+                if before_2001:
+                    if has_fujian:
+                        zhengshu_coe = 1.3
+                    else:
+                        zhengshu_coe = 1.1
+                else:
+                    if has_fujian:
+                        zhengshu_coe = 1
+                    else:
+                        zhengshu_coe = 0
             elif x['a0429'] in [code_xueli.loc[code_xueli['mc0000'] == '大学本科', 'bm0000'],
                                 code_xueli.loc[code_xueli['mc0000'] == '双本科', 'bm0000']] or x['a0440'] == code_xuewei.loc[
                 code_xuewei['mc0000'] == '学士学位', 'bm0000']:
-                base_score = 80
-                if x['a0431'] in school_qs100 or x['a0431'] in school_985:
-                    school_coe = 1.5
-                elif x['a0431'] in school_211 or x['a0431'] in school_shuangyiliu or x['a0431'] in school_qs100_200:
-                    school_coe = 1.3
-                if x['a0429'] in [code_xueli.loc[code_xueli['mc0000'] == '大学本科', 'bm0000'],
-                                  code_xueli.loc[code_xueli['mc0000'] == '双本科', 'bm0000']] and x['a0440'] == code_xuewei[
-                    code_xuewei['mc0000'] == '学士学位', 'bm0000']:
-                    zhengshu_coe = 1
+                if before_2001:
+                    base_score = 120
                 else:
-                    zhengshu_coe = 0.8
+                    base_score = 100
+                if x['a0431'] in school_qs100 or x['a0431'] in school_985:
+                    school_coe = 1.3
+                elif x['a0431'] in school_211 or x['a0431'] in school_shuangyiliu or x['a0431'] in school_qs100_200:
+                    school_coe = 1.2
+                if before_2001:
+                    if has_fujian:
+                        zhengshu_coe = 1.3
+                    else:
+                        zhengshu_coe = 1.1
+                else:
+                    if has_fujian:
+                        zhengshu_coe = 1
+                    else:
+                        zhengshu_coe = 0
             elif x['a0429'] in [code_xueli.loc[code_xueli['mc0000'] == '大学专科', 'bm0000'],
                                 code_xueli.loc[code_xueli['mc0000'] == '双大专', 'bm0000']]:
-                base_score = 60
+                if before_2001:
+                    base_score = 90
+                else:
+                    base_score = 80
+                if before_2001:
+                    if has_fujian:
+                        zhengshu_coe = 1.3
+                    else:
+                        zhengshu_coe = 1.1
+                else:
+                    if has_fujian:
+                        zhengshu_coe = 1
+                    else:
+                        zhengshu_coe = 0
             elif x['a0429'] in [code_xueli.loc[code_xueli['mc0000'] == '中等专科', 'bm0000'],
                                 code_xueli.loc[code_xueli['mc0000'] == '高中', 'bm0000']]:
-                base_score = 50
+                if before_2001:
+                    base_score = 70
+                else:
+                    base_score = 60
+                if before_2001:
+                    if has_fujian:
+                        zhengshu_coe = 1.3
+                    else:
+                        zhengshu_coe = 1.1
+                else:
+                    if has_fujian:
+                        zhengshu_coe = 1
+                    else:
+                        zhengshu_coe = 0
             else:
-                base_score = 40
+                base_score = 50
 
             final_score = base_score * school_coe * zhengshu_coe
 

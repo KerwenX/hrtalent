@@ -31,23 +31,23 @@ def cal_working_growing_up_score(now_year,session):
         elif x['khqk'] == '不称职':
             return 40
 
-    #计算5年考核得分
-    def cal_5year_score(x):
-        score = 0
-        if x['a8759'].min() <= now_year - 5:
-            score = x['考核得分'].mean()
-        else:
-            score = 0
-        return score
-
-    #计算3年考核得分
-    def cal_3year_score(x):
-        score = 0
-        if x['a8759'].min() <= now_year - 3:
-            score = x['考核得分'].mean()
-        else:
-            score = 0
-        return score
+    # #计算5年考核得分
+    # def cal_5year_score(x):
+    #     score = 0
+    #     if x['a8759'].min() <= now_year - 5:
+    #         score = x['考核得分'].mean()
+    #     else:
+    #         score = 0
+    #     return score
+    #
+    # #计算3年考核得分
+    # def cal_3year_score(x):
+    #     score = 0
+    #     if x['a8759'].min() <= now_year - 3:
+    #         score = x['考核得分'].mean()
+    #     else:
+    #         score = 0
+    #     return score
 
 
     #年度考核
@@ -55,13 +55,16 @@ def cal_working_growing_up_score(now_year,session):
     df_kaohe = df_kaohe[df_kaohe['任职形式'] == '担任'] # TODO 没有任职形式字段
     df_kaohe['a8759'] = df_kaohe['a8759'].astype(int)
     df_kaohe['考核得分'] = df_kaohe.apply(cal_kaohe_score, axis=1)
-    df_kaohe_5year = df_kaohe[df_kaohe['a8759'].apply(lambda x: x >= now_year - 5 and x <= now_year - 1)]
-    df_kaohe_3year = df_kaohe[df_kaohe['a8759'].apply(lambda x: x >= now_year - 3 and x <= now_year - 1)]
-    df_kaohe_5year_g = df_kaohe_5year.groupby(['a0188']).apply(cal_5year_score)
-    df_kaohe_3year_g = df_kaohe_3year.groupby(['a0188']).apply(cal_3year_score)
-    df_kaohe_5year_g.rename('5年内考核评分成长',inplace=True)
-    df_kaohe_3year_g.rename('3年内考核评分成长',inplace=True)
-
+    # df_kaohe_5year = df_kaohe[df_kaohe['a8759'].apply(lambda x: x >= now_year - 5 and x <= now_year - 1)]
+    # df_kaohe_3year = df_kaohe[df_kaohe['a8759'].apply(lambda x: x >= now_year - 3 and x <= now_year - 1)]
+    # df_kaohe_5year_g = df_kaohe_5year.groupby(['a0188']).apply(cal_5year_score)
+    # df_kaohe_3year_g = df_kaohe_3year.groupby(['a0188']).apply(cal_3year_score)
+    # df_kaohe_5year_g.rename('5年内考核评分成长',inplace=True)
+    # df_kaohe_3year_g.rename('3年内考核评分成长',inplace=True)
+    df_kaohe_past = df_kaohe[df_kaohe['a8759'].apply(lambda x:x>=now_year - 5 and x<=now_year-1)]
+    df_kaohe_past.drop('a8759',axis=1,inplace=True)
+    df_kaohe_past = df_kaohe_past.groupby(['a0188']).mean()
+    df_kaohe_past.rename(columns={'考核得分':'考核评分成长'},inplace=True)
 
     #过往绩效
     def cal_longhu_score(x):
@@ -186,13 +189,16 @@ def cal_working_growing_up_score(now_year,session):
 
 
     df_longhu['龙虎榜得分'] = df_longhu.apply(cal_longhu_score, axis=1)
-    df_longhu_5year = df_longhu[df_longhu['year'].apply(lambda x: x >= now_year - 5 and x <= now_year - 1)]
-    df_longhu_3year = df_longhu[df_longhu['year'].apply(lambda x: x >= now_year - 3 and x <= now_year - 1)]
-    df_longhu_5year_g = df_longhu_5year.groupby(['a0188']).apply(cal_longhu_5year_score)
-    df_longhu_3year_g = df_longhu_3year.groupby(['a0188']).apply(cal_longhu_3year_score)
-    df_longhu_5year_g.rename('5年内龙虎榜成长',inplace=True)
-    df_longhu_3year_g.rename('3年内龙虎榜成长',inplace=True)
-
+    # df_longhu_5year = df_longhu[df_longhu['year'].apply(lambda x: x >= now_year - 5 and x <= now_year - 1)]
+    # df_longhu_3year = df_longhu[df_longhu['year'].apply(lambda x: x >= now_year - 3 and x <= now_year - 1)]
+    # df_longhu_5year_g = df_longhu_5year.groupby(['a0188']).apply(cal_longhu_5year_score)
+    # df_longhu_3year_g = df_longhu_3year.groupby(['a0188']).apply(cal_longhu_3year_score)
+    # df_longhu_5year_g.rename('5年内龙虎榜成长',inplace=True)
+    # df_longhu_3year_g.rename('3年内龙虎榜成长',inplace=True)
+    df_longhu_past = df_kaohe[df_kaohe['year'].apply(lambda x: x >= now_year - 5 and x <= now_year - 1)]
+    df_longhu_past.drop('year', axis=1, inplace=True)
+    df_longhu_past = df_kaohe_past.groupby(['a0188']).mean()
+    df_longhu_past.rename(columns={'龙虎榜得分': '龙虎榜成长'}, inplace=True)
 
     #员工统计
     df_base = pd.read_sql(session.query(A01).statement, session.bind)
@@ -204,14 +210,19 @@ def cal_working_growing_up_score(now_year,session):
     df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)]
 
 
-    df_result = pd.merge(df_base[['a0188']], df_kaohe_5year_g, on='a0188', how='left')
-    df_result = pd.merge(df_result, df_kaohe_3year_g, on='a0188', how='left')
-    df_result = pd.merge(df_result, df_longhu_5year_g, on='a0188', how='left')
-    df_result = pd.merge(df_result, df_longhu_3year_g, on='a0188', how='left')
+    # df_result = pd.merge(df_base[['a0188']], df_kaohe_5year_g, on='a0188', how='left')
+    # df_result = pd.merge(df_result, df_kaohe_3year_g, on='a0188', how='left')
+    # df_result = pd.merge(df_result, df_longhu_5year_g, on='a0188', how='left')
+    # df_result = pd.merge(df_result, df_longhu_3year_g, on='a0188', how='left')
+    #
+    # df_result.fillna(0,inplace=True)
+    #
+    # df_result['绩效考核成长得分'] = 0.25 * (df_result['5年内考核评分成长'] + df_result['3年内考核评分成长'] + df_result['5年内龙虎榜成长'] + df_result['3年内龙虎榜成长'])
 
-    df_result.fillna(0,inplace=True)
+    df_result = pd.merge(df_base[['a0188']],df_kaohe_past,on='a0188',how='left')
+    df_result = pd.merge(df_result,df_longhu_past,on='a0188',how='left')
 
-    df_result['绩效考核成长得分'] = 0.25 * (df_result['5年内考核评分成长'] + df_result['3年内考核评分成长'] + df_result['5年内龙虎榜成长'] + df_result['3年内龙虎榜成长'])
+    df_result['绩效考核成长得分'] = 0.5 * df_result['考核评分时常'] + 0.5 * df_result['龙虎榜成长']
 
     return df_result
 

@@ -25,11 +25,12 @@ class A01(Base):
     a01686 = Column(VARCHAR(20), nullable=True)  # 行员等级
     e0101 = Column(VARCHAR(10), nullable=True)  # 岗位
     a01687 = Column(VARCHAR(20),nullable=True) # 聘任职业技术等级
+    a01679 = Column(VARCHAR(20), nullable=True) # 录用类型
 
     def __repr__(self):
         return f"<A01(a0190='{self.a0190}',a0101='{self.a0101}',dept_1='{self.dept_1}',dept_2='{self.dept_2}',dept_code='{self.dept_code}'" \
                f",a0141='{self.a0141}',a01145='{self.a01145}',a01686='{self.a01686}',e0101='{self.e0101}'," \
-               f"a01687='{self.a01686}')>"
+               f"a01687='{self.a01686},a01679='{self.a01679}')>"
 
 
 class A04(Base):
@@ -201,11 +202,12 @@ class Gxlygydjx(Base):
     # 龙虎榜排名，各序列员工月度绩效
     __tablename__ = 'gxlygydjx'
     recordid = Column(INTEGER, nullable=False, primary_key=True, autoincrement=True)  # record id
+    a0188 = Column(INTEGER, nullable=False)  # 姓名
     yjjxje = Column(NUMERIC(19, 2), nullable=True)  # 月均绩效金额
     year = Column(VARCHAR(4), nullable=True)  # 年份
 
     def __repr__(self):
-        return f"<Gxlygydjx(yjjxje='{self.yjjxje}',year='{self.year}')>"
+        return f"<Gxlygydjx(a0188='{self.a0188}',yjjxje='{self.yjjxje}',year='{self.year}')>"
 
 
 class K_month(Base):
