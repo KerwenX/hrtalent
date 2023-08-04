@@ -10,17 +10,24 @@ import pandas as pd
 import numpy as np
 import datetime
 import time
-from models.layer1_model import A01,A866
+from models.layer1_model import A01,A866,Bm_jp_a01,E01
 
 
 
 def calculate_in_bank_working_experience_score(session):
+
+    # 行员等级编码
+    hydj_code = pd.read_sql(session.query(Bm_jp_a01).statement,session.bind)
+
+    # 岗位编码
+    position_code = pd.read_sql(session.query(E01).statement,session.bind)
+
     #读取员工基本信息
     df_base = pd.read_sql(session.query(A01).statement, session.bind)
 
     #筛选出非高管和首席的员工
     # df_base = df_base[df_base['任职形式'] == '担任'] # TODO 没有任职形式字段
-    df_base = df_base[df_base['dept_code'] != '高管']
+    df_base = df_base[df_base['dept_code'] != position_code.loc[position_code['mc0000']=='董事长','dept_code']]
     # df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)] # code error
     df_base = df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', 'a0141', 'a01145','a01686']]
 
@@ -60,15 +67,15 @@ def calculate_in_bank_working_experience_score(session):
 
         #计算行员等级系数
         emp_lv_factor = 1
-        if x['a01686'] in ['十二级', '十一级']:
+        if x['a01686'] in [hydj_code.loc[hydj_code['mc0000']=='十二级','bm0000'], hydj_code.loc[hydj_code['mc0000']=='十一级','bm0000']]:
             emp_lv_factor = 1
-        elif x['a01686'] in ['十级', '九级', '八级']:
+        elif x['a01686'] in [hydj_code.loc[hydj_code['mc0000']=='十级','bm0000'],hydj_code.loc[hydj_code['mc0000']=='九级','bm0000'],hydj_code.loc[hydj_code['mc0000']=='八级','bm0000']]:
             emp_lv_factor = 1.1
-        elif x['a01686'] in ['七级', '六级', '五级']:
+        elif x['a01686'] in [hydj_code.loc[hydj_code['mc0000']=='七级','bm0000'],hydj_code.loc[hydj_code['mc0000']=='六级','bm0000'],hydj_code.loc[hydj_code['mc0000']=='五级','bm0000']]:
             emp_lv_factor = 1.2
-        elif x['a01686'] in ['四级', '三级', '二级']:
+        elif x['a01686'] in [hydj_code.loc[hydj_code['mc0000']=='四级','bm0000'],hydj_code.loc[hydj_code['mc0000']=='三级','bm0000'],hydj_code.loc[hydj_code['mc0000']=='二级','bm0000']]:
             emp_lv_factor = 1.3
-        elif x['a01686'] in ['一级']:
+        elif x['a01686'] in [hydj_code.loc[hydj_code['mc0000']=='一级','bm0000']]:
             emp_lv_factor = 1.5
 
         #职业序列等级系数

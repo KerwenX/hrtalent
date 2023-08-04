@@ -9,12 +9,15 @@ import numpy as np
 import datetime
 import time
 import re
-from models.layer1_model import A01,A8145,A8192
+from models.layer1_model import A01,A8145,A8192,E01
 
 
 def cal_punish_score(now_year,session):
 
     now_year = int(now_year)
+
+    # 岗位编码
+    position_code = pd.read_sql(session.query(E01).statement, session.bind)
 
     df_weigui = pd.read_sql(session.query(A8145).statement, session.bind)
 
@@ -101,7 +104,7 @@ def cal_punish_score(now_year,session):
 
     #筛选出非高管和首席的员工
     # df_base = df_base[df_base['任职形式'] == '担任'] # TODO 没有任职形式字段
-    df_base = df_base[df_base['dept_code'] != '高管']
+    df_base = df_base[df_base['dept_code'] != position_code.loc[position_code['mc0000']=='高管','dept_code']]
     # df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)] # TODO code error
 
     df_result = pd.merge(df_base[['a0188', 'a0101']], df_weigui_now_group[['a0188', '当年违规惩处扣分']], how='left')

@@ -11,11 +11,14 @@ import numpy as np
 import datetime
 import time
 import os
-from models.layer1_model import A01,K_month,A875,Gxlygydjx
+from models.layer1_model import A01,K_month,A875,Gxlygydjx,E01
 
 
 def calculate_working_status_score(now_year,session):
     #计算工作状态得分
+
+    # 岗位编码
+    position_code = pd.read_sql(session.query(E01).statement, session.bind)
 
     #读取KOL数据    
     kol_names = os.listdir('seqdata/KOL') # TODO KOL表
@@ -70,7 +73,7 @@ def calculate_working_status_score(now_year,session):
 
     #筛选出非高管和首席的员工
     df_base = df_base[df_base['任职形式'] == '担任']
-    df_base = df_base[df_base['dept_code'] != '高管']
+    df_base = df_base[df_base['dept_code'] != position_code.loc[position_code['mc0000']=='高管','dept_code']]
     df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)]
 
 

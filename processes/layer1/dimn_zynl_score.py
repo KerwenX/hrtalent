@@ -9,9 +9,12 @@ import numpy as np
 import datetime
 import time
 import re
-from models.layer1_model import Tability,A01,Tpersonality
+from models.layer1_model import Tability,A01,Tpersonality,E01
 
 def cal_ability_evaluation_score(session):
+    # 岗位编码
+    position_code = pd.read_sql(session.query(E01).statement, session.bind)
+
     #综合能力测评得分
     df_nengli = pd.read_sql(session.query(Tability).statement, session.bind)
 
@@ -29,7 +32,7 @@ def cal_ability_evaluation_score(session):
 
     #筛选出非高管和首席的员工
     df_base = df_base[df_base['任职形式'] == '担任']
-    df_base = df_base[df_base['dept_code'] != '高管']
+    df_base = df_base[df_base['dept_code'] != position_code.loc[position_code['mc0000']=='高管','dept_code']]
     df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)]
 
     df_result = pd.merge(df_base[['a0188']], df_nengli, on='a0188', how='left')
