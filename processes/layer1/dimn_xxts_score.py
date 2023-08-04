@@ -8,39 +8,40 @@ import pandas as pd
 import numpy as np
 import datetime
 import time
-from models.layer1_model import A01,A04,Bm_gxsjb
+from models.layer1_model import A01,A04,Bm_gxsjb,Empat17,Empat18
 
 def cal_learning_growing_up_score(session):
 
-    # TODO 还没修改
     #内训师
-    df_peixun= pd.read_excel('seqdata\内训师、学习平台、全员轮训数据.xls', dtype=str, sheet_name='内训师')
-    df_peixun.rename(columns={'工号':'a0188'}, inplace=True)
+    # 获取2022内训师数据
+    df_peixun= pd.read_sql(session.query(Empat17).statement,session.bind)
+    df_peixun = df_peixun[df_peixun['years'] == 2022]
+    df_peixun.rename(columns={'a0190':'a0188'}, inplace=True)
 
     df_peixun['考核得分'] = df_peixun['a81884'].apply(lambda x: 0 if x == '无' else int(x))
 
     def cal_neixunshi_score(x):
         lvl_score = 0
-        if x['内训师现等级'] == '初级内训师':
+        if x['a81882'] == '初级内训师':
             lvl_score = 20
-        elif x['内训师现等级'] == '中级内训师':
+        elif x['a81882'] == '中级内训师':
             lvl_score = 30
-        elif x['内训师现等级'] == '高级内训师':
+        elif x['a81882'] == '高级内训师':
             lvl_score = 40
-        elif x['内训师现等级'] == '专家内训师':
+        elif x['a81882'] == '专家内训师':
             lvl_score = 50
         jifen_score = 0
-        if x['考核得分'] < 80:
+        if x['a81884'] < 80:
             jifen_score = 0
-        elif 80 <= x['考核得分'] <= 85:
+        elif 80 <= x['a81884'] <= 85:
             jifen_score = 30
-        elif 80 < x['考核得分'] <= 90:
+        elif 80 < x['a81884'] <= 90:
             jifen_score = 35
-        elif 90 < x['考核得分'] <= 95:
+        elif 90 < x['a81884'] <= 95:
             jifen_score = 40
-        elif 95 < x['考核得分'] <= 100:
+        elif 95 < x['a81884'] <= 100:
             jifen_score = 45
-        elif x['考核得分'] > 100:
+        elif x['a81884'] > 100:
             jifen_score = 50
         final_score = lvl_score + jifen_score
         return final_score
@@ -50,8 +51,9 @@ def cal_learning_growing_up_score(session):
 
 
     #学习平台
-    df_pingtai= pd.read_excel('seqdata\内训师、学习平台、全员轮训数据.xls', dtype=str, sheet_name='学习平台')
-    df_pingtai.rename(columns={'工号':'a0188'}, inplace=True)
+    df_pingtai= pd.read_sql(session.query(Empat18).statement,session.bind)
+    df_pingtai = df_pingtai[df_pingtai['years']==2022]
+    df_pingtai.rename(columns={'a0190':'a0188'}, inplace=True) # 工号 姓名
 
     df_pingtai['学习平台得分情况得分'] = df_pingtai['empat181'].astype(float)
 
@@ -205,7 +207,7 @@ def cal_learning_growing_up_score(session):
 
     df_jiaoyu_zaizhi_group.rename('在职教育得分', inplace=True)
 
-    df_base = pd.read_excel('seqdata\基本信息_20230620170630.xlsx', dtype=str)
+    df_base = pd.read_sql(session.query(A01).statement,session.bind)
     df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', 'a0141', 'a01145','a01686']]
 
     #筛选出非高管和首席的员工
