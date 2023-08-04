@@ -184,12 +184,18 @@ class Empat18(Base):
 
 
 # TODO empat19 字段不明确
-# class Empat19(Base):
-#   # 全员轮训
-#   __tablename__ = 'empat19'
-#
-#     def __repr__(self):
-#         return f"<Empat19(
+class Empat19(Base):
+    # 全员轮训
+    __tablename__ = 'empat19'
+    recordid = Column(INTEGER, nullable=False, primary_key=True, autoincrement=True)  # record id
+    a0188 = Column(INTEGER, nullable=False)  # 姓名
+    years = Column(VARCHAR(4), nullable=True)  # 年度
+    bixiuke = Column(VARCHAR(200),nullable=True) # 必修课
+    gongkaike = Column(VARCHAR(200),nullable=True) # 公开课
+
+    def __repr__(self):
+        return f"<Empat19(a0188='{self.a0188}', years='{self.years}', bixiuke='{self.bixiuke}', " \
+               f"gongkaike = '{self.gongkaike}')>"
 
 class Gxlygydjx(Base):
     # 龙虎榜排名，各序列员工月度绩效

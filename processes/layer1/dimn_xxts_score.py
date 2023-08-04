@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import datetime
 import time
-from models.layer1_model import A01, A04, Bm_gxsjb, Empat17, Empat18, E01, Bm_jylx, Bmyh_xl, Bm_sf0,Bmyh_xw
+from models.layer1_model import A01, A04, Bm_gxsjb, Empat17, Empat18, E01, Bm_jylx, Bmyh_xl, Bm_sf0,Bmyh_xw,Empat19
 
 
 def cal_learning_growing_up_score(session):
@@ -31,7 +31,7 @@ def cal_learning_growing_up_score(session):
     # 获取2022内训师数据
     df_peixun = pd.read_sql(session.query(Empat17).statement, session.bind)
     df_peixun = df_peixun[df_peixun['years'] == 2022]
-    df_peixun.rename(columns={'a0190': 'a0188'}, inplace=True)
+    # df_peixun.rename(columns={'a0190': 'a0188'}, inplace=True)
 
     df_peixun['考核得分'] = df_peixun['a81884'].apply(lambda x: 0 if x == '无' else int(x))
 
@@ -66,23 +66,23 @@ def cal_learning_growing_up_score(session):
     # 学习平台
     df_pingtai = pd.read_sql(session.query(Empat18).statement, session.bind)
     df_pingtai = df_pingtai[df_pingtai['years'] == 2022]
-    df_pingtai.rename(columns={'a0190': 'a0188'}, inplace=True)  # 工号 姓名
+    # df_pingtai.rename(columns={'a0190': 'a0188'}, inplace=True)  # 工号 姓名
 
     df_pingtai['学习平台得分情况得分'] = df_pingtai['empat181'].astype(float)
 
     # 全员轮训
-    df_lunxun = pd.read_excel('seqdata\内训师、学习平台、全员轮训数据.xls', dtype=str, sheet_name='2022年全员轮训')
+    df_lunxun = pd.read_sql(session.query(Empat19).statement,session.bind)
     now_year = 2022
-    df_lunxun = df_lunxun[df_lunxun['归属年份'].astype(int) == now_year]
-    df_lunxun.rename(columns={'工号': 'a0188'}, inplace=True)
+    df_lunxun = df_lunxun[df_lunxun['years'].astype(int) == now_year]
+    # df_lunxun.rename(columns={'a0188': 'a0188'}, inplace=True)
 
     def cal_lunxun_score(x):
         final_score = 0
-        bixiuke_score = float(x['必修课'])
-        if x['公开课'] == '无需参加':
+        bixiuke_score = float(x['bixiuke'])
+        if x['gongkaike'] == '无需参加':
             final_score = bixiuke_score
         else:
-            final_score = (float(x['公开课']) + bixiuke_score) / 2
+            final_score = (float(x['gongkaike']) + bixiuke_score) / 2
         return final_score
 
     df_lunxun['全员轮训情况得分'] = df_lunxun.apply(cal_lunxun_score, axis=1)
