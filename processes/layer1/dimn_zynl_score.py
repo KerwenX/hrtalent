@@ -19,7 +19,7 @@ def cal_ability_evaluation_score(session):
     df_nengli = pd.read_sql(session.query(Tability).statement, session.bind)
 
     df_nengli['综合能力得分'] = df_nengli['totalscore'].astype(float) / 8 * 100
-    df_nengli = df_nengli[['a0188', '综合能力得分']].groupby('a0188').max() # TODO lack data
+    df_nengli = df_nengli[['a0188', '综合能力得分']].groupby('a0188').max()
 
     #性格评测得分
     df_xingge = pd.read_sql(session.query(Tpersonality).statement, session.bind)
@@ -28,7 +28,7 @@ def cal_ability_evaluation_score(session):
 
     #员工统计
     df_base = pd.read_sql(session.query(A01).statement, session.bind)
-    df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', '聘任职业技术等级']]
+    df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', 'a01687']]
 
     #筛选出非高管和首席的员工
     df_base = df_base[df_base['任职形式'] == '担任']

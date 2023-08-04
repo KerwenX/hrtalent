@@ -39,7 +39,7 @@ def cal_relation_score(session):
     #社会兼职
     df_jianzhi = pd.read_sql(session.query(A865).statement, session.bind)
     df_jianzhi_g = df_jianzhi.groupby('a0188').count()
-    df_jianzhi_g.rename(columns={'name': '完整条数'}, inplace=True) #TODO 社会兼职只有一项
+    df_jianzhi_g.rename(columns={'a0188': '完整条数'}, inplace=True)
     df_jianzhi_g['社会关系得分'] = df_jianzhi_g['完整条数'] * 50
 
 

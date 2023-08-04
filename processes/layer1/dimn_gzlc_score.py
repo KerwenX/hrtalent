@@ -27,7 +27,7 @@ def calculate_in_bank_working_experience_score(session):
 
     #筛选出非高管和首席的员工
     # df_base = df_base[df_base['任职形式'] == '担任'] # TODO 没有任职形式字段
-    df_base = df_base[df_base['dept_code'] != position_code.loc[position_code['mc0000']=='董事长','dept_code']]
+    df_base = df_base[df_base['dept_code'] != position_code.loc[position_code['mc0000']=='高管','dept_code']]
     # df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)] # code error
     df_base = df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', 'a0141', 'a01145','a01686']]
 
@@ -46,7 +46,6 @@ def calculate_in_bank_working_experience_score(session):
         elif 20 <= x:
             return 100
 
-    # TODO code modify
     # df_base['入行年限'] = df_base['a0141'].apply(lambda x: (datetime.datetime.now() - datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')).days / 365)
     df_base['入行年限'] = df_base['a0141'].apply(lambda x: (datetime.datetime.now() - x).days / 365)
     # df_base['当期岗位工作年限'] = df_base['a01145'].apply(lambda x: (datetime.datetime.now() - datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')).days / 365)

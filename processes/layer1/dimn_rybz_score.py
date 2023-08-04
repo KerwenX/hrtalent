@@ -10,7 +10,6 @@ import datetime
 import time
 from models.layer1_model import A01,A815,E01
 
-# TODO 没有数据，暂时没有测试
 def cal_honor_score(now_year,session):
     now_year = int(now_year)
 

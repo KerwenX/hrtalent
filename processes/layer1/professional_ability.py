@@ -116,7 +116,7 @@ def cal_professional_ability_score(session):
 
         return final_score
 
-    df_jiaoyu_quanrizhi['学校得分'] = df_jiaoyu_quanrizhi.apply(cal_quanrizhi_score, axis=1)  # TODO lack of data
+    df_jiaoyu_quanrizhi['学校得分'] = df_jiaoyu_quanrizhi.apply(cal_quanrizhi_score, axis=1)
 
     df_jiaoyu_quanrizhi_group = df_jiaoyu_quanrizhi.groupby(['a0188']).apply(lambda x: x['学校得分'].max())
     df_jiaoyu_quanrizhi_group.rename('全日制教育得分', inplace=True)
@@ -124,7 +124,7 @@ def cal_professional_ability_score(session):
     # 职称情况得分
     # 员工统计
     df_base = pd.read_sql(session.query(A01).statement, session.bind)
-    df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', '聘任职业技术等级']]
+    df_base[['a0188', 'a0101', 'dept_1', 'dept_2', 'dept_code', 'e0101', 'a01687']]
 
     # 筛选出非高管和首席的员工
     # df_base = df_base[df_base['任职形式'] == '担任']
@@ -141,7 +141,7 @@ def cal_professional_ability_score(session):
             final_score = 20
         return final_score
 
-    df_base['职称情况得分'] = df_base['聘任职业技术等级'].apply(cal_zhicheng_score)
+    df_base['职称情况得分'] = df_base['a01687'].apply(cal_zhicheng_score)
 
     # 技术资格得分
     df_zhengshu_score = pd.read_excel('seqdata\江南农商银行_专业序列资质标签加分表 v5 20230713.xlsx', sheet_name='Sheet3')

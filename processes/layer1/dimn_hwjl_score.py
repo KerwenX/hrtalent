@@ -45,7 +45,7 @@ def calculate_in_bank_working_experience_score(session):
     #筛选出非高管和首席的员工
     # df_base = df_base[df_base['任职形式'] == '担任'] # TODO 任职形式字段不清楚
     df_base = df_base[df_base['dept_code'] != position_code.loc[position_code['mc0000']=='高管','dept_code']]
-    # df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)] # TODO code error
+    df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)]
 
     df_working = pd.read_sql(session.query(A866).statement, session.bind)
 

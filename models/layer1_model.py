@@ -24,10 +24,12 @@ class A01(Base):
     a01145 = Column(DATETIME(8), nullable=True)  # 任现岗位时间
     a01686 = Column(VARCHAR(20), nullable=True)  # 行员等级
     e0101 = Column(VARCHAR(10), nullable=True)  # 岗位
+    a01687 = Column(VARCHAR(20),nullable=True) # 聘任职业技术等级
 
     def __repr__(self):
         return f"<A01(a0190='{self.a0190}',a0101='{self.a0101}',dept_1='{self.dept_1}',dept_2='{self.dept_2}',dept_code='{self.dept_code}'" \
-               f",a0141='{self.a0141}',a01145='{self.a01145}',a01686='{self.a01686}',e0101='{self.e0101}')>"
+               f",a0141='{self.a0141}',a01145='{self.a01145}',a01686='{self.a01686}',e0101='{self.e0101}'," \
+               f"a01687='{self.a01686}')>"
 
 
 class A04(Base):
@@ -233,6 +235,71 @@ class Tpersonality(Base):
 
     def __repr__(self):
         return f"<Tpersonality(dominance='{self.dominance}',influence='{self.influence}',steadiness='{self.steadiness}',compliance='{self.compliance}')>"
+
+class A8187(Base):
+    # 日志表
+    __tablename__ = 'a8187'
+    recordid = Column(INTEGER,nullable=False,primary_key=True) #记录标识号
+    a_id = Column(INTEGER,nullable=True) #序号
+    infochgfbid = Column(INTEGER,nullable=True) #信息变更申请附表ID
+    a0188 = Column(INTEGER,nullable=False) #姓名
+    gz_ym = Column(VARCHAR(6),nullable=False) #年月
+    a81871 = Column(VARCHAR(20),nullable=True) #工号
+    dept_code = Column(VARCHAR(200),nullable=False) #部门
+    a81872 = Column(NUMERIC(19,2),nullable=True) #发布量
+    a81873 = Column(NUMERIC(19,2),nullable=True) #点赞量
+    a81874 = Column(NUMERIC(19,2),nullable=True) #浏览量
+    a81875 = Column(NUMERIC(19,2),nullable=True) #回复量
+    a81876 = Column(NUMERIC(19,2),nullable=True) #转发量
+    a81877 = Column(NUMERIC(19,2),nullable=True) #互动总量
+    a81878 = Column(NUMERIC(19,2),nullable=True) #总字数
+    a81879 = Column(VARCHAR(20),nullable=True) #上榜次数
+    opname = Column(VARCHAR(100),nullable=True) #操作者
+    opdate = Column(DATETIME(8),nullable=True) #操作时间
+    signed = Column(SMALLINT(2),nullable=True) #审批标记
+
+    def __repr__(self):
+        return f"<A8187(recordid='{self.recordid}',a_id='{self.a_id}',infochgfbid='{self.infochgfbid}',a0188='{self.a0188}',gz_ym='{self.gz_ym}',a81871='{self.a81871}',dept_code='{self.dept_code}',a81872='{self.a81872}',a81873='{self.a81873}',a81874='{self.a81874}',a81875='{self.a81875}',a81876='{self.a81876}',a81877='{self.a81877}',a81878='{self.a81878}',a81879='{self.a81879}',opname='{self.opname}',opdate='{self.opdate}',signed='{self.signed}')>"
+
+class A8196(Base):
+    # 项目活动子集
+    __tablename__ = 'a8196'
+    recordid = Column(INTEGER,nullable=False,primary_key=True) #记录标识号
+    a0188 = Column(INTEGER,nullable=False) #姓名
+    a_id = Column(INTEGER,nullable=True) #序号
+    infochgfbid = Column(INTEGER,nullable=True) #信息变更申请附表ID
+    a81961 = Column(VARCHAR(20),nullable=True) #项目/活动类型
+    a81962 = Column(DATETIME(8),nullable=True) #开始时间
+    a81963 = Column(DATETIME(8),nullable=True) #结束时间
+    a81964 = Column(VARCHAR(500),nullable=True) #项目/活动名称
+    a81965 = Column(VARCHAR(500),nullable=True) #项目/活动角色
+    a81966 = Column(VARCHAR(500),nullable=True) #参与程度
+    a81967 = Column(VARCHAR(1000),nullable=True) #项目/活动描述
+    a81968 = Column(VARCHAR(500),nullable=True) #项目/活动负责人
+    a81969 = Column(VARCHAR(500),nullable=True) #项目/活动照片
+    signed = Column(SMALLINT(2),nullable=True) #审批标记
+    opname = Column(VARCHAR(100),nullable=True) #操作者
+    opdate = Column(DATETIME(8),nullable=True) #操作时间
+
+    def __repr__(self):
+        return f"<A8196(recordid='{self.recordid}',a0188='{self.a0188}',a_id='{self.a_id}',infochgfbid='{self.infochgfbid}',a81961='{self.a81961}',a81962='{self.a81962}',a81963='{self.a81963}',a81964='{self.a81964}',a81965='{self.a81965}',a81966='{self.a81966}',a81967='{self.a81967}',a81968='{self.a81968}',a81969='{self.a81969}',signed='{self.signed}',opname='{self.opname}',opdate='{self.opdate}')>"
+
+class Kol(Base):
+    # kol表
+    __tablename__ = 'kol'
+    recordid = Column(INTEGER,nullable=False,primary_key=True) #记录标识号
+    a_id = Column(INTEGER,nullable=True) #序号
+    infochgfbid = Column(INTEGER,nullable=True) #信息变更申请附表ID
+    a0190 = Column(VARCHAR(20),nullable=True,index=True) #员工号
+    a0188 = Column(INTEGER,nullable=False) #姓名
+    gz_ym = Column(VARCHAR(6),nullable=False) #年月
+    jf = Column(NUMERIC(19,2),nullable=True) #积分
+    opname = Column(VARCHAR(100),nullable=True) #操作者
+    opdate = Column(DATETIME(8),nullable=True) #操作时间
+    signed = Column(SMALLINT(2),nullable=True) #审批标记
+
+    def __repr__(self):
+        return f"<Kol(recordid='{self.recordid}',a_id='{self.a_id}',infochgfbid='{self.infochgfbid}',a0190='{self.a0190}',a0188='{self.a0188}',gz_ym='{self.gz_ym}',jf='{self.jf}',opname='{self.opname}',opdate='{self.opdate}',signed='{self.signed}')>"
 
 
 # 码表

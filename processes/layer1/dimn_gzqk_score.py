@@ -11,7 +11,7 @@ import numpy as np
 import datetime
 import time
 import os
-from models.layer1_model import A01,K_month,A875,Gxlygydjx,E01
+from models.layer1_model import A01,K_month,A875,Gxlygydjx,E01,Kol,A8187
 
 
 def calculate_working_status_score(now_year,session):
@@ -20,50 +20,54 @@ def calculate_working_status_score(now_year,session):
     # 岗位编码
     position_code = pd.read_sql(session.query(E01).statement, session.bind)
 
+    # kol
+    df_kol = pd.read_sql(session.query(Kol).statement,session.bind)
+
     #读取KOL数据    
-    kol_names = os.listdir('seqdata/KOL') # TODO KOL表
-    df_kol_list = []
-    for kol_name in kol_names:
-        kol_file = 'seqdata/KOL/' + kol_name
-        df_temp = pd.read_csv(kol_file, dtype=str)
-        df_temp['统计年份'] = kol_name.replace('.csv', '')
-        df_kol_list.append(df_temp)
-    df_kol = pd.concat(df_kol_list, axis=0)
-    df_kol.rename(columns = {'USERID': 'a0188', 'USERNAME': 'a0101', '(EXPR)': 'KOL积分'}, inplace=True)
+    # kol_names = os.listdir('seqdata/KOL')
+    # df_kol_list = []
+    # for kol_name in kol_names:
+    #     kol_file = 'seqdata/KOL/' + kol_name
+    #     df_temp = pd.read_csv(kol_file, dtype=str)
+    #     df_temp['统计年份'] = kol_name.replace('.csv', '')
+    #     df_kol_list.append(df_temp)
+    # df_kol = pd.concat(df_kol_list, axis=0)
+    df_kol.rename(columns = {'a0190': '员工号', 'a0188': '姓名', 'jf': 'KOL积分'}, inplace=True)
 
     #KOL得分统计
-    df_kol_now = df_kol[df_kol['统计年份'] == now_year]
+    df_kol_now = df_kol[df_kol['gz_ym'] == now_year]
     kol_now_max_score = df_kol_now['KOL积分'].astype(int).max()
 
     df_kol_now['KOL得分'] = df_kol_now['KOL积分'].astype(int) / kol_now_max_score * 100
 
     #日志数据读取
-    journal_names = os.listdir('seqdata/日志') # TODO 日志表
-    df_journal_list = []
-    for journal_name in journal_names:
-        journal_file = 'seqdata/日志/' + journal_name
-        df_temp = pd.read_excel(journal_file, dtype=str)
-        df_temp['统计年月'] = journal_name.replace('.xls', '')
-        df_journal_list.append(df_temp)
-    df_journal = pd.concat(df_journal_list, axis=0)
-    df_journal.rename(columns={'用户CODE': 'a0188'}, inplace=True)
-    df_journal_now = df_journal[df_journal['统计年月'].apply(lambda x: now_year in x)]
+    df_journal = pd.read_sql(session.query(A8187).statement,session.bind)
+    # journal_names = os.listdir('seqdata/日志')
+    # df_journal_list = []
+    # for journal_name in journal_names:
+    #     journal_file = 'seqdata/日志/' + journal_name
+    #     df_temp = pd.read_excel(journal_file, dtype=str)
+    #     df_temp['统计年月'] = journal_name.replace('.xls', '')
+    #     df_journal_list.append(df_temp)
+    # df_journal = pd.concat(df_journal_list, axis=0)
+    # df_journal.rename(columns={'用户CODE': 'a0188'}, inplace=True)
+    df_journal_now = df_journal[df_journal['gz_ym'].apply(lambda x: now_year in x)]
 
     #日志得分统计
-    df_journal_now['发布量'] = df_journal_now['发布量'].astype(float)
-    df_journal_now['点赞量'] = df_journal_now['点赞量'].astype(float)
-    df_journal_now['浏览量'] = df_journal_now['浏览量'].astype(float)
-    df_journal_now['回复量'] = df_journal_now['回复量'].astype(float)
-    df_journal_now['转发量'] = df_journal_now['转发量'].astype(float)
-    df_journal_now['互动总量'] = df_journal_now['互动总量'].astype(float)
-    df_journal_now['总字数'] = df_journal_now['总字数'].astype(float)
-    df_journal_now['上榜次数'] = df_journal_now['上榜次数'].astype(float)
+    df_journal_now['a81872'] = df_journal_now['a81872'].astype(float)
+    df_journal_now['a81873'] = df_journal_now['a81873'].astype(float)
+    df_journal_now['a81874'] = df_journal_now['a81874'].astype(float)
+    df_journal_now['a81875'] = df_journal_now['a81875'].astype(float)
+    df_journal_now['a81876'] = df_journal_now['a81876'].astype(float)
+    df_journal_now['a81877'] = df_journal_now['a81877'].astype(float)
+    df_journal_now['a81878'] = df_journal_now['a81878'].astype(float)
+    df_journal_now['a81879'] = df_journal_now['a81879'].astype(float)
     df_journal_now_by_month = df_journal_now.groupby('a0188').mean().reset_index()
 
-    df_journal_now_by_month['发布数量得分'] = df_journal_now_by_month['发布量'] / df_journal_now_by_month['发布量'].max() * 20
-    df_journal_now_by_month['发布字数得分'] = df_journal_now_by_month['总字数'] / df_journal_now_by_month['总字数'].max() * 20
-    df_journal_now_by_month['上榜次数得分'] = df_journal_now_by_month['上榜次数'] / df_journal_now_by_month['上榜次数'].max() * 20
-    df_journal_now_by_month['互动总量得分'] = df_journal_now_by_month['互动总量'] / df_journal_now_by_month['互动总量'].max() * 20
+    df_journal_now_by_month['发布数量得分'] = df_journal_now_by_month['a81872'] / df_journal_now_by_month['a81872'].max() * 20
+    df_journal_now_by_month['发布字数得分'] = df_journal_now_by_month['a81878'] / df_journal_now_by_month['a81878'].max() * 20
+    df_journal_now_by_month['上榜次数得分'] = df_journal_now_by_month['a81879'] / df_journal_now_by_month['a81879'].max() * 20
+    df_journal_now_by_month['互动总量得分'] = df_journal_now_by_month['a81877'] / df_journal_now_by_month['a81877'].max() * 20
     df_journal_now_by_month['日志得分'] = df_journal_now_by_month['发布数量得分'] + df_journal_now_by_month['发布字数得分'] + df_journal_now_by_month['上榜次数得分'] + df_journal_now_by_month['互动总量得分']
 
 
@@ -87,7 +91,7 @@ def calculate_working_status_score(now_year,session):
     df_kaoqin = pd.read_sql(session.query(K_month).statement, session.bind)
 
     def cal_kaoqin_score(x):
-        if x['事病假天数'] == 0: # TODO k_month中的事病假天数字段不清楚
+        if x['事病假天数'] == 0:
             return 100
         elif 0 < x['事病假天数'] and x['事病假天数'] <= 5:
             return 90
@@ -104,7 +108,7 @@ def calculate_working_status_score(now_year,session):
 
     #考勤得分统计
     df_kaoqin_now = df_kaoqin[df_kaoqin['gz_ym'].apply(lambda x: now_year in x)]
-    df_kaoqin_now['出勤情况得分'] = df_kaoqin_now['leave_time_11'].astype(int) + df_kaoqin_now['leave_time_12'].astype(int)
+    df_kaoqin_now['事病假天数'] = df_kaoqin_now['leave_time_11'].astype(int) + df_kaoqin_now['leave_time_12'].astype(int)
     df_kaoqin_now_sum_month = df_kaoqin_now[['a0188', '事病假天数']].groupby(['a0188']).sum().reset_index()
     df_kaoqin_now_sum_month['出勤情况得分'] = df_kaoqin_now_sum_month.apply(cal_kaoqin_score, axis=1)
     df_kaoqin_now_sum_month['出勤情况得分'].fillna(100, inplace=True)

@@ -52,7 +52,7 @@ def cal_working_growing_up_score(now_year,session):
 
     #年度考核
     df_kaohe = pd.read_sql(session.query(A875).statement, session.bind)
-    # df_kaohe = df_kaohe[df_kaohe['任职形式'] == '担任'] # TODO 没有任职形式字段
+    df_kaohe = df_kaohe[df_kaohe['任职形式'] == '担任'] # TODO 没有任职形式字段
     df_kaohe['a8759'] = df_kaohe['a8759'].astype(int)
     df_kaohe['考核得分'] = df_kaohe.apply(cal_kaohe_score, axis=1)
     df_kaohe_5year = df_kaohe[df_kaohe['a8759'].apply(lambda x: x >= now_year - 5 and x <= now_year - 1)]

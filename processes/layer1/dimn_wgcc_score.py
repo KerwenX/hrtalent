@@ -105,7 +105,7 @@ def cal_punish_score(now_year,session):
     #筛选出非高管和首席的员工
     # df_base = df_base[df_base['任职形式'] == '担任'] # TODO 没有任职形式字段
     df_base = df_base[df_base['dept_code'] != position_code.loc[position_code['mc0000']=='高管','dept_code']]
-    # df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)] # TODO code error
+    df_base = df_base[df_base['e0101'].apply(lambda x: '首席' not in x)]
 
     df_result = pd.merge(df_base[['a0188', 'a0101']], df_weigui_now_group[['a0188', '当年违规惩处扣分']], how='left')
     df_result = pd.merge(df_result, df_weigui_past_group, on='a0188', how='left')
@@ -137,7 +137,7 @@ def cal_punish_score(now_year,session):
 
     #当年惩处
     df_chengchu_now = df_chengchu[df_chengchu['a81921'].astype(int) == now_year]
-    df_chengchu_now_g = df_chengchu_now[['a0101', '单一惩处扣分']].groupby('a0101').sum() # TODO 缺少数据做测试
+    df_chengchu_now_g = df_chengchu_now[['a0101', '单一惩处扣分']].groupby('a0101').sum()
     df_chengchu_now_g.rename(columns = {'单一惩处扣分': '当年违规惩处扣分'}, inplace=True)
 
 
